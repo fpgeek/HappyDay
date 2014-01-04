@@ -9,25 +9,17 @@ public class DailyData {
 
     private String date;
     private String location;
-    private long imageId;
+//    private long imageId;
+    private long thumbId;
+    private String imagePath;
 
-    public Bitmap getThumbBitmap() {
-        return thumbBitmap;
-    }
-
-    public void setThumbBitmap(Bitmap thumbBitmap) {
-        this.thumbBitmap = thumbBitmap;
-    }
-
-    private Bitmap thumbBitmap;
-
-    public long getImageId() {
-        return imageId;
-    }
-
-    public void setImageId(long imageId) {
-        this.imageId = imageId;
-    }
+//    public long getImageId() {
+//        return imageId;
+//    }
+//
+//    public void setImageId(long imageId) {
+//        this.imageId = imageId;
+//    }
 
 
     public String getDate() {
@@ -38,11 +30,29 @@ public class DailyData {
         this.date = date;
     }
 
+
     public String getLocation() {
         return location;
     }
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public long getThumbId() {
+        return thumbId;
+    }
+
+    public void setThumbId(long thumbId) {
+        this.thumbId = thumbId;
+    }
+
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+
+    public String getImagePath() {
+        return imagePath;
     }
 }

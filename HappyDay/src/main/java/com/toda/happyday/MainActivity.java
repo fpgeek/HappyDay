@@ -1,13 +1,11 @@
 package com.toda.happyday;
 
 import android.app.Activity;
-import android.app.Fragment;
-import android.content.ContentUris;
+import android.app.ListFragment;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
@@ -15,10 +13,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -62,7 +56,7 @@ public class MainActivity extends Activity {
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment {
+    public static class PlaceholderFragment extends ListFragment {
 
         private static Bitmap loadingBitmap = null;
 
@@ -76,30 +70,29 @@ public class MainActivity extends Activity {
 
             Cursor imagesCursor = getImagesCursor();
 
-            ImageScrollView imageScroll = (ImageScrollView)rootView.findViewById(R.id.image_scroll);
-            imageScroll.setLoadingBitmap(getLoadingBitmap());
-
-            List<Uri> uriList = new ArrayList<Uri>(imagesCursor.getCount());
-            LinearLayout imageContainer = (LinearLayout)rootView.findViewById(R.id.image_container);
+            List<DailyData> dailyDatas = new ArrayList<DailyData>(imagesCursor.getCount());
             while(imagesCursor.moveToNext()) {
-                long id = imagesCursor.getLong(imagesCursor.getColumnIndex(MediaStore.Images.Media._ID));
-                Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-                uriList.add(imageUri);
+                DailyData dailyData = new DailyData();
+//                long id = imagesCursor.getLong(imagesCursor.getColumnIndex(MediaStore.Images.Media._ID));
+                String path = imagesCursor.getString(imagesCursor.getColumnIndex(MediaStore.Images.Media.DATA));
+                dailyData.setImagePath(path);
+//                Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+//                dailyData.setImageId(id);
+
                 int takenDate = imagesCursor.getInt(imagesCursor.getColumnIndex(MediaStore.Images.Media.DATE_TAKEN));
+                dailyData.setDate(new Date(takenDate).toString());
 
-                View itemView = inflater.inflate(R.layout.daily_item, container, false);
-                TextView dateTextView = (TextView)itemView.findViewById(R.id.date_text);
-                dateTextView.setText(new Date(takenDate).toString());
+                dailyData.setLocation("location");
 
-                TextView locationTextView = (TextView)itemView.findViewById(R.id.location_text);
-                locationTextView.setText("location");
+                long thumId = imagesCursor.getLong(imagesCursor.getColumnIndex(MediaStore.Images.Thumbnails._ID));
+                dailyData.setThumbId(thumId);
 
-                ImageView pictureView = (ImageView)itemView.findViewById(R.id.picture);
-                pictureView.setImageBitmap(getLoadingBitmap());
-
-                imageContainer.addView(itemView);
+                dailyDatas.add(dailyData);
             }
             imagesCursor.close();
+
+            DailyListAdapter listAdapter = new DailyListAdapter(getActivity(), dailyDatas);
+            setListAdapter(listAdapter);
 
             return rootView;
         }
@@ -115,6 +108,7 @@ public class MainActivity extends Activity {
             final Uri imagesUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
             final String[] projection = {
                     MediaStore.Images.Media._ID,
+                    MediaStore.Images.Media.DATA,
                     MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
                     MediaStore.Images.Media.DATE_TAKEN,
                     MediaStore.Images.Media.LATITUDE,
