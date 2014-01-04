@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.ListFragment;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -58,14 +57,13 @@ public class MainActivity extends Activity {
      */
     public static class PlaceholderFragment extends ListFragment {
 
-        private static Bitmap loadingBitmap = null;
-
         public PlaceholderFragment() {
         }
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
+
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
             Cursor imagesCursor = getImagesCursor();
@@ -73,11 +71,9 @@ public class MainActivity extends Activity {
             List<DailyData> dailyDatas = new ArrayList<DailyData>(imagesCursor.getCount());
             while(imagesCursor.moveToNext()) {
                 DailyData dailyData = new DailyData();
-//                long id = imagesCursor.getLong(imagesCursor.getColumnIndex(MediaStore.Images.Media._ID));
+
                 String path = imagesCursor.getString(imagesCursor.getColumnIndex(MediaStore.Images.Media.DATA));
                 dailyData.setImagePath(path);
-//                Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-//                dailyData.setImageId(id);
 
                 int takenDate = imagesCursor.getInt(imagesCursor.getColumnIndex(MediaStore.Images.Media.DATE_TAKEN));
                 dailyData.setDate(new Date(takenDate).toString());
@@ -95,13 +91,6 @@ public class MainActivity extends Activity {
             setListAdapter(listAdapter);
 
             return rootView;
-        }
-
-        private Bitmap getLoadingBitmap() {
-            if (loadingBitmap == null) {
-                loadingBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.img_loading);
-            }
-            return loadingBitmap;
         }
 
         private Cursor getImagesCursor() {

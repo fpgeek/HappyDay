@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -70,15 +71,27 @@ public class DailyListAdapter extends ArrayAdapter<DailyData> {
         final int[] imageOrgSize = getBitmapSize(dailyData.getImagePath());
 
         final int imageWidth = mWindowWidth;
-        final int imageHeight = (mWindowWidth / imageOrgSize[0]) * imageOrgSize[1];
+        final double imageWidthRate = (double)mWindowWidth / (double)imageOrgSize[0];
+        final int imageHeight = (int)(imageWidthRate * (double)imageOrgSize[1]);
+
+//        Log.i("HappyDay", "imageWidthRate : " + imageWidthRate);
+//        Log.i("HappyDay", "image imageOrgSize[0] : " + imageOrgSize[0]);
+//        Log.i("HappyDay", "image imageOrgSize[1] : " + imageOrgSize[1]);
+//        Log.i("HappyDay", "image imageWidth : " + imageWidth);
+//        Log.i("HappyDay", "image imageHeight : " + imageHeight);
 
         viewHolder.mPictureImageView.setImageBitmap(mLoadingBitmap);
         viewHolder.mPictureImageView.getLayoutParams().width = imageWidth;
         viewHolder.mPictureImageView.getLayoutParams().height = imageHeight;
 
-        new ImageLoadTask(viewHolder.mPictureImageView).execute(dailyData.getImagePath());
+        ListView listView = (ListView)parent;
+        new ImageLoadTask(viewHolder.mPictureImageView, listView, position, isResizing(imageOrgSize[0], imageOrgSize[1])).execute(dailyData.getImagePath());
 
         return convertView;
+    }
+
+    private boolean isResizing(int width, int height) {
+        return (width > 1000 && height > 1000);
     }
 
     private static class ViewHolder {
@@ -88,64 +101,58 @@ public class DailyListAdapter extends ArrayAdapter<DailyData> {
         public ImageView mPictureImageView;
     }
 
-    private class ImageLoadResult {
-
-        public int imageWidth;
-        public int imageHeight;
-        public Bitmap bitmap;
-
-        public ImageLoadResult(Bitmap _bitmap, int _imageWidth, int _imageHeight) {
-            imageWidth = _imageWidth;
-            imageHeight = _imageHeight;
-            bitmap = _bitmap;
-        }
-    }
-
     private class ImageLoadTask extends AsyncTask<String, Void, Bitmap> {
 
         private ImageView mPictureView;
+        private ListView mListView;
+        private int mPosition;
+        private boolean mIsResizing;
 
-        public ImageLoadTask(ImageView pictureView) {
+        public ImageLoadTask(ImageView pictureView, ListView listView, int position, boolean isResizing) {
             mPictureView = pictureView;
+            mListView = listView;
+            mPosition = position;
+            mIsResizing = isResizing;
         }
 
         @Override
         protected Bitmap doInBackground(String... strings) {
             final String imagePath = strings[0];
-//            final int[] imageOrgSize = getBitmapSize(imagePath);
-//
-//            final int imageWidth = mWindowWidth;
-//            final int imageHeight = (mWindowWidth / imageOrgSize[0]) * imageOrgSize[1];
 
             BitmapFactory.Options opt = new BitmapFactory.Options();
-            opt.inSampleSize = 4;
+            if (mIsResizing) {
+                opt.inSampleSize = 4;
+            }
             opt.inJustDecodeBounds = false;
 
-            return BitmapFactory.decodeFile(imagePath, opt);
-//            return new ImageLoadResult(BitmapFactory.decodeFile(imagePath, opt), imageWidth, imageHeight);
+            if (mListView.getFirstVisiblePosition() <= mPosition && mPosition <= mListView.getLastVisiblePosition()) {
+                return BitmapFactory.decodeFile(imagePath, opt);
+            } else {
+                return null;
+            }
         }
 
         @Override
         protected void onPostExecute(Bitmap result) {
             if (result != null) {
-                mPictureView.setImageBitmap(result);
+                if (mListView.getFirstVisiblePosition() <= mPosition && mPosition <= mListView.getLastVisiblePosition()) {
+                    mPictureView.setImageBitmap(result);
+                }
             } else {
-                Log.e("DailyListAdapter", "bitmap == null");
+                Log.i("DailyListAdapter", "bitmap == null");
             }
         }
     }
 
     public int[] getBitmapSize( String fileName ){
         int[] size = {0,0};
-        try {
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeFile(fileName, options);
-            size[0] = options.outWidth;
-            size[1] = options.outHeight;
-            return size;
-        } catch(Exception e) {
-            return size;
-        }
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(fileName, options);
+        size[0] = options.outWidth;
+        size[1] = options.outHeight;
+        return size;
+
     }
 }
