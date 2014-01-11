@@ -19,6 +19,8 @@ import java.util.List;
 
 public class MainActivity extends Activity {
 
+    private final static long TAKEN_DATE_DIFF_MS = 1000 * 60 * 60; // 사진이 묶이는 시간 차이 - 1시간
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,26 +70,42 @@ public class MainActivity extends Activity {
 
             Cursor imagesCursor = getImagesCursor();
 
-            List<DailyData> dailyDatas = new ArrayList<DailyData>(imagesCursor.getCount());
+            List<List<DailyData>> dailyDataGroup = new ArrayList<List<DailyData>>(imagesCursor.getCount());
+            List<DailyData> dailyDataList = null;
+            long prevTakenDateValue = 0;
             while(imagesCursor.moveToNext()) {
                 DailyData dailyData = new DailyData();
 
-                String path = imagesCursor.getString(imagesCursor.getColumnIndex(MediaStore.Images.Media.DATA));
-                dailyData.setImagePath(path);
+                final long takenDateValue = imagesCursor.getLong(imagesCursor.getColumnIndex(MediaStore.Images.Media.DATE_TAKEN));
+                Date takenDate = new Date(takenDateValue);
+                dailyData.setDate(takenDate);
 
-                int takenDate = imagesCursor.getInt(imagesCursor.getColumnIndex(MediaStore.Images.Media.DATE_TAKEN));
-                dailyData.setDate(new Date(takenDate).toString());
+                final long takenTime = takenDate.getTime();
 
-                dailyData.setLocation("location");
+                String imagePath = imagesCursor.getString(imagesCursor.getColumnIndex(MediaStore.Images.Media.DATA));
+                dailyData.setImagePath(imagePath);
 
-                long thumId = imagesCursor.getLong(imagesCursor.getColumnIndex(MediaStore.Images.Thumbnails._ID));
-                dailyData.setThumbId(thumId);
+                final double longitudeValue = imagesCursor.getDouble(imagesCursor.getColumnIndex(MediaStore.Images.Media.LONGITUDE));
+                dailyData.setLongitude(longitudeValue);
 
-                dailyDatas.add(dailyData);
+                final double latitudeValue = imagesCursor.getDouble(imagesCursor.getColumnIndex(MediaStore.Images.Media.LATITUDE));
+                dailyData.setLatitude(latitudeValue);
+
+                if (dailyDataList == null) { dailyDataList = new ArrayList<DailyData>(); }
+                dailyDataList.add(dailyData);
+
+                if ( !(prevTakenDateValue > 0 && ((takenTime - prevTakenDateValue) <= TAKEN_DATE_DIFF_MS)) ) {
+                    dailyDataGroup.add(dailyDataList);
+                    dailyDataList = null;
+                }
+
+                prevTakenDateValue = takenDateValue;
+
             }
+            dailyDataGroup.add(dailyDataList);
             imagesCursor.close();
 
-            DailyListAdapter listAdapter = new DailyListAdapter(getActivity(), dailyDatas);
+            DailyListAdapter listAdapter = new DailyListAdapter(getActivity(), dailyDataGroup);
             setListAdapter(listAdapter);
 
             return rootView;
@@ -107,7 +125,7 @@ public class MainActivity extends Activity {
             };
             final String selection = "";
             String[] selectionArgs = null;
-            final String sortOreder = "";
+            final String sortOreder = MediaStore.Images.Media.DATE_TAKEN;
 
             return getActivity().getContentResolver().query(
                     imagesUri,

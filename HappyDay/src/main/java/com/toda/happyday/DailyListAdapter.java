@@ -21,27 +21,27 @@ import java.util.List;
 /**
  * Created by fpgeek on 2013. 12. 8..
  */
-public class DailyListAdapter extends ArrayAdapter<DailyData> {
+public class DailyListAdapter extends ArrayAdapter<List<DailyData>> {
 
     private Activity context;
-    private List<DailyData> dailyDatas;
+    private List<List<DailyData>> dailyDataGroup;
 
-    private int mWindowWidth = 0;
-    private int mWindowHeight = 0;
+    private int windowWidth = 0;
+    private int windowHeight = 0;
 
     private static Bitmap mLoadingBitmap;
 
-    public DailyListAdapter(Activity context, List<DailyData> dailyDatas) {
-        super(context, R.layout.daily_item, dailyDatas);
+    public DailyListAdapter(Activity context, List<List<DailyData>> dailyDataGroup) {
+        super(context, R.layout.daily_item, dailyDataGroup);
 
         this.context = context;
-        this.dailyDatas = dailyDatas;
+        this.dailyDataGroup = dailyDataGroup;
 
         DisplayMetrics metrics = new DisplayMetrics();
         ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(metrics);
 
-        mWindowWidth = metrics.widthPixels;
-        mWindowHeight = metrics.heightPixels;
+        windowWidth = metrics.widthPixels;
+        windowHeight = metrics.heightPixels;
 
         mLoadingBitmap = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.img_loading);
     }
@@ -64,14 +64,14 @@ public class DailyListAdapter extends ArrayAdapter<DailyData> {
             viewHolder = (ViewHolder)convertView.getTag();
         }
 
-        DailyData dailyData = dailyDatas.get(position);
-        viewHolder.mDateTextView.setText(dailyData.getDate());
-        viewHolder.mLocationTextView.setText(dailyData.getLocation());
+        DailyData dailyData = dailyDataGroup.get(position).get(0);
+        viewHolder.mDateTextView.setText("Date");
+        viewHolder.mLocationTextView.setText("Location");
 
         final int[] imageOrgSize = getBitmapSize(dailyData.getImagePath());
 
-        final int imageWidth = mWindowWidth;
-        final double imageWidthRate = (double)mWindowWidth / (double)imageOrgSize[0];
+        final int imageWidth = windowWidth;
+        final double imageWidthRate = (double) windowWidth / (double)imageOrgSize[0];
         final int imageHeight = (int)(imageWidthRate * (double)imageOrgSize[1]);
 
 //        Log.i("HappyDay", "imageWidthRate : " + imageWidthRate);

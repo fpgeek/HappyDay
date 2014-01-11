@@ -1,19 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <TextView android:id="@+id/date_text"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"/>
-
-    <TextView android:id="@+id/location_text"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"/>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="fill_parent"
+    android:layout_width="fill_parent"
+    android:layout_gravity="top">
 
     <ImageView android:id="@+id/picture"
         android:layout_height="fill_parent"
         android:layout_width="fill_parent"
         android:scaleType="fitXY"/>
-</LinearLayout>
+
+    <TextView android:id="@+id/date_text"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginLeft="250dp"
+        android:layout_marginBottom="100dp"
+        android:textSize="50sp" />
+
+    <TextView android:id="@+id/location_text"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginLeft="250dp"
+        android:layout_marginBottom="30dp"
+        android:textSize="20sp"/>
+
+</FrameLayout>
