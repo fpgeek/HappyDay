@@ -3,7 +3,10 @@ package com.toda.happyday;
 import android.graphics.Bitmap;
 import android.location.Location;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -33,8 +36,18 @@ public class DailyData {
         this.latitude = latitude;
     }
 
-    public Date getDate() {
-        return date;
+    public String getFullDateText() {
+        return DateFormat.getDateInstance(DateFormat.FULL).format(date);
+    }
+
+    public String getDayText() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return String.format("%02d", calendar.get(Calendar.DAY_OF_MONTH));
+    }
+
+    public String getTimeText() {
+        return DateFormat.getTimeInstance().format(date);
     }
 
     public void setDate(Date date) {

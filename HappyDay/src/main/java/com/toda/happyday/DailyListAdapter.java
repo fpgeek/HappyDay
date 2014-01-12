@@ -15,7 +15,10 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 
 /**
@@ -28,6 +31,8 @@ public class DailyListAdapter extends ArrayAdapter<List<DailyData>> {
 
     private int windowWidth = 0;
     private int windowHeight = 0;
+    private Random random = new Random();
+    private Map<Integer, Integer> dailyDataIndexMap;
 
     private static Bitmap mLoadingBitmap;
 
@@ -36,6 +41,7 @@ public class DailyListAdapter extends ArrayAdapter<List<DailyData>> {
 
         this.context = context;
         this.dailyDataGroup = dailyDataGroup;
+        this.dailyDataIndexMap = makeDailyDataIndexMap(dailyDataGroup);
 
         DisplayMetrics metrics = new DisplayMetrics();
         ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(metrics);
@@ -44,6 +50,15 @@ public class DailyListAdapter extends ArrayAdapter<List<DailyData>> {
         windowHeight = metrics.heightPixels;
 
         mLoadingBitmap = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.img_loading);
+    }
+
+    private Map<Integer, Integer> makeDailyDataIndexMap(List<List<DailyData>> dailyDataGroup) {
+        Map<Integer, Integer> dailyDataIndexMap = new HashMap<Integer, Integer>(dailyDataGroup.size());
+        final int dailyDataGroupSize = dailyDataGroup.size();
+        for (int i=0; i<dailyDataGroupSize; i++) {
+            dailyDataIndexMap.put(i, random.nextInt(dailyDataGroup.get(i).size() - 1));
+        }
+        return dailyDataIndexMap;
     }
 
     @Override
@@ -55,18 +70,22 @@ public class DailyListAdapter extends ArrayAdapter<List<DailyData>> {
             convertView = context.getLayoutInflater().inflate(R.layout.daily_item, null);
 
             viewHolder = new ViewHolder();
-            viewHolder.mDateTextView = (TextView)convertView.findViewById(R.id.date_text);
-            viewHolder.mLocationTextView = (TextView)convertView.findViewById(R.id.location_text);
-            viewHolder.mPictureImageView = (ImageView)convertView.findViewById(R.id.picture);
+            viewHolder.fullDateTextView = (TextView)convertView.findViewById(R.id.full_date_text);
+            viewHolder.dayTextView = (TextView)convertView.findViewById(R.id.day_text);
+            viewHolder.timeTextView = (TextView)convertView.findViewById(R.id.time_text);
+            viewHolder.pictureImageView = (ImageView)convertView.findViewById(R.id.picture);
 
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder)convertView.getTag();
         }
 
-        DailyData dailyData = dailyDataGroup.get(position).get(0);
-        viewHolder.mDateTextView.setText("Date");
-        viewHolder.mLocationTextView.setText("Location");
+        List<DailyData> dailyDataList = dailyDataGroup.get(position);
+        DailyData dailyData = dailyDataList.get(dailyDataIndexMap.get(position));
+
+        viewHolder.fullDateTextView.setText(dailyData.getFullDateText());
+        viewHolder.dayTextView.setText(dailyData.getDayText());
+        viewHolder.timeTextView.setText(dailyData.getTimeText());
 
         final int[] imageOrgSize = getBitmapSize(dailyData.getImagePath());
 
@@ -74,18 +93,12 @@ public class DailyListAdapter extends ArrayAdapter<List<DailyData>> {
         final double imageWidthRate = (double) windowWidth / (double)imageOrgSize[0];
         final int imageHeight = (int)(imageWidthRate * (double)imageOrgSize[1]);
 
-//        Log.i("HappyDay", "imageWidthRate : " + imageWidthRate);
-//        Log.i("HappyDay", "image imageOrgSize[0] : " + imageOrgSize[0]);
-//        Log.i("HappyDay", "image imageOrgSize[1] : " + imageOrgSize[1]);
-//        Log.i("HappyDay", "image imageWidth : " + imageWidth);
-//        Log.i("HappyDay", "image imageHeight : " + imageHeight);
-
-        viewHolder.mPictureImageView.setImageBitmap(mLoadingBitmap);
-        viewHolder.mPictureImageView.getLayoutParams().width = imageWidth;
-        viewHolder.mPictureImageView.getLayoutParams().height = imageHeight;
+        viewHolder.pictureImageView.setImageBitmap(mLoadingBitmap);
+        viewHolder.pictureImageView.getLayoutParams().width = imageWidth;
+        viewHolder.pictureImageView.getLayoutParams().height = imageHeight;
 
         ListView listView = (ListView)parent;
-        new ImageLoadTask(viewHolder.mPictureImageView, listView, position, isResizing(imageOrgSize[0], imageOrgSize[1])).execute(dailyData.getImagePath());
+        new ImageLoadTask(viewHolder.pictureImageView, listView, position, isResizing(imageOrgSize[0], imageOrgSize[1])).execute(dailyData.getImagePath());
 
         return convertView;
     }
@@ -95,10 +108,10 @@ public class DailyListAdapter extends ArrayAdapter<List<DailyData>> {
     }
 
     private static class ViewHolder {
-
-        public TextView mDateTextView;
-        public TextView mLocationTextView;
-        public ImageView mPictureImageView;
+        public TextView fullDateTextView;
+        public TextView dayTextView;
+        public TextView timeTextView;
+        public ImageView pictureImageView;
     }
 
     private class ImageLoadTask extends AsyncTask<String, Void, Bitmap> {
@@ -125,7 +138,7 @@ public class DailyListAdapter extends ArrayAdapter<List<DailyData>> {
             }
             opt.inJustDecodeBounds = false;
 
-            if (mListView.getFirstVisiblePosition() <= mPosition && mPosition <= mListView.getLastVisiblePosition()) {
+            if (shouldDecodeBitmap()) {
                 return BitmapFactory.decodeFile(imagePath, opt);
             } else {
                 return null;
@@ -135,12 +148,18 @@ public class DailyListAdapter extends ArrayAdapter<List<DailyData>> {
         @Override
         protected void onPostExecute(Bitmap result) {
             if (result != null) {
-                if (mListView.getFirstVisiblePosition() <= mPosition && mPosition <= mListView.getLastVisiblePosition()) {
+                if (shouldSetImageBitmap()) {
                     mPictureView.setImageBitmap(result);
                 }
-            } else {
-                Log.i("DailyListAdapter", "bitmap == null");
             }
+        }
+
+        private boolean shouldDecodeBitmap() {
+            return mListView.getFirstVisiblePosition() - 1 <= mPosition && mPosition <= mListView.getLastVisiblePosition() + 1;
+        }
+
+        private boolean shouldSetImageBitmap() {
+            return mListView.getFirstVisiblePosition() <= mPosition && mPosition <= mListView.getLastVisiblePosition();
         }
     }
 

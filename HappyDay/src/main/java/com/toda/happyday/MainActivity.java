@@ -77,6 +77,10 @@ public class MainActivity extends Activity {
                 DailyData dailyData = new DailyData();
 
                 final long takenDateValue = imagesCursor.getLong(imagesCursor.getColumnIndex(MediaStore.Images.Media.DATE_TAKEN));
+                if (prevTakenDateValue == 0) {
+                    prevTakenDateValue = takenDateValue;
+                }
+
                 Date takenDate = new Date(takenDateValue);
                 dailyData.setDate(takenDate);
 
@@ -94,13 +98,13 @@ public class MainActivity extends Activity {
                 if (dailyDataList == null) { dailyDataList = new ArrayList<DailyData>(); }
                 dailyDataList.add(dailyData);
 
-                if ( !(prevTakenDateValue > 0 && ((prevTakenDateValue - takenTime) <= TAKEN_DATE_DIFF_MS)) ) {
+                if ((prevTakenDateValue - takenTime) <= TAKEN_DATE_DIFF_MS) {
+                    prevTakenDateValue = takenDateValue;
+                } else {
                     dailyDataGroup.add(dailyDataList);
                     dailyDataList = null;
+                    prevTakenDateValue = 0;
                 }
-
-                prevTakenDateValue = takenDateValue;
-
             }
 
             if (dailyDataList != null) {
