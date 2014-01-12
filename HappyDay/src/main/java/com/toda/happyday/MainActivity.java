@@ -94,7 +94,7 @@ public class MainActivity extends Activity {
                 if (dailyDataList == null) { dailyDataList = new ArrayList<DailyData>(); }
                 dailyDataList.add(dailyData);
 
-                if ( !(prevTakenDateValue > 0 && ((takenTime - prevTakenDateValue) <= TAKEN_DATE_DIFF_MS)) ) {
+                if ( !(prevTakenDateValue > 0 && ((prevTakenDateValue - takenTime) <= TAKEN_DATE_DIFF_MS)) ) {
                     dailyDataGroup.add(dailyDataList);
                     dailyDataList = null;
                 }
@@ -102,7 +102,11 @@ public class MainActivity extends Activity {
                 prevTakenDateValue = takenDateValue;
 
             }
-            dailyDataGroup.add(dailyDataList);
+
+            if (dailyDataList != null) {
+                dailyDataGroup.add(dailyDataList);
+            }
+
             imagesCursor.close();
 
             DailyListAdapter listAdapter = new DailyListAdapter(getActivity(), dailyDataGroup);
@@ -125,7 +129,7 @@ public class MainActivity extends Activity {
             };
             final String selection = "";
             String[] selectionArgs = null;
-            final String sortOreder = MediaStore.Images.Media.DATE_TAKEN;
+            final String sortOreder = MediaStore.Images.Media.DATE_TAKEN + " DESC";
 
             return getActivity().getContentResolver().query(
                     imagesUri,
