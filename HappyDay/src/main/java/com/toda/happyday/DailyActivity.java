@@ -1,12 +1,9 @@
 package com.toda.happyday;
 
 import android.app.Activity;
-import android.app.ActionBar;
-import android.app.Fragment;
 import android.app.ListFragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcel;
 import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -14,12 +11,18 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.os.Build;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import com.toda.happyday.model.PictureGroup;
+import com.toda.happyday.model.PictureInfo;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DailyActivity extends Activity {
+
+    private PlaceholderFragment placeholderFragment = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,12 +30,12 @@ public class DailyActivity extends Activity {
         setContentView(R.layout.activity_daily);
 
         if (savedInstanceState == null) {
+            placeholderFragment = new PlaceholderFragment();
             getFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment())
+                    .add(R.id.container, placeholderFragment)
                     .commit();
         }
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -60,12 +63,13 @@ public class DailyActivity extends Activity {
     }
 
     private void openStickerView() {
-        Intent intent = new Intent(this, StickerActivity.class);
-        startActivity(intent);
+        // TODO
     }
 
     private void openEditView() {
         Intent intent = new Intent(this, WriteActivity.class);
+        intent.putExtra(getString(R.string.EXTRA_DAILY_GROUP_ID), this.placeholderFragment.getPictureGroup().getId());
+        intent.putExtra(getString(R.string.EXTRA_DAIRY_TEXT), this.placeholderFragment.getPictureGroup().getDairyText());
         startActivity(intent);
     }
 
@@ -73,6 +77,10 @@ public class DailyActivity extends Activity {
      * A placeholder fragment containing a simple view.
      */
     public static class PlaceholderFragment extends ListFragment {
+
+        private PictureGroup pictureGroup;
+        private View headerView;
+        private List<PictureGroup> pictureGroupList;
 
         public PlaceholderFragment() {
         }
@@ -82,26 +90,52 @@ public class DailyActivity extends Activity {
                 Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_daily, container, false);
 
-            Parcelable[] dailyDataArray = getActivity().getIntent().getParcelableArrayExtra(MainActivity.EXTRA_DAILY_DATA_ARRAY);
+            Parcelable parcelable = getActivity().getIntent().getParcelableExtra(MainActivity.EXTRA_PICTURE_GROUP);
+            pictureGroup = (PictureGroup)parcelable;
 
-            List<List<DailyData>> dailyDataGroup = new ArrayList<List<DailyData>>(dailyDataArray.length);
-            for(Parcelable parcel : dailyDataArray) {
-                DailyData dailyData = (DailyData)parcel;
-                List<DailyData> dailyDataList = new ArrayList<DailyData>(1);
-                dailyDataList.add(dailyData);
-                dailyDataGroup.add(dailyDataList);
+            pictureGroup.loadFromDb(getActivity());
+
+            pictureGroupList = new ArrayList<PictureGroup>(pictureGroup.size());
+            for (PictureInfo pictureInfo : pictureGroup) {
+                PictureGroup pictureInfoList = new PictureGroup(1);
+                pictureInfoList.add(pictureInfo);
+                pictureGroupList.add(pictureInfoList);
             }
 
-            DailyListAdapter listAdapter = new DailyListAdapter(getActivity(), dailyDataGroup);
-            setListAdapter(listAdapter);
+            headerView = inflater.inflate(R.layout.diary, null, false);
 
             return rootView;
+        }
+
+        @Override
+        public void onActivityCreated(Bundle savedInstanceState) {
+            super.onActivityCreated(savedInstanceState);
+
+            if (headerView != null) {
+                getListView().addHeaderView(headerView);
+            }
+
+            DailyListAdapter listAdapter = new DailyListAdapter(getActivity(), pictureGroupList);
+            setListAdapter(listAdapter);
+        }
+
+        @Override
+        public void onStart() {
+            super.onStart();
+
+            if (pictureGroup != null) {
+                pictureGroup.loadFromDb(getActivity());
+            }
         }
 
         @Override
         public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
             super.onCreateOptionsMenu(menu, inflater);
             inflater.inflate(R.menu.daily, menu);
+        }
+
+        public PictureGroup getPictureGroup() {
+            return pictureGroup;
         }
     }
 

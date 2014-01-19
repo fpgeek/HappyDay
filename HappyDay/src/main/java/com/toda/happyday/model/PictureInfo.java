@@ -1,33 +1,37 @@
-package com.toda.happyday;
+package com.toda.happyday.model;
 
-import android.graphics.Bitmap;
-import android.location.Location;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Created by fpgeek on 2013. 12. 8..
  */
-public class DailyData implements Parcelable {
+public class PictureInfo implements Parcelable {
 
+    private long id;
     private Date date;
     private double longitude;
     private double latitude;
     private String imagePath;
 
-    public DailyData() {
+    public PictureInfo() {
 
     }
 
-    public DailyData(Parcel parcel) {
+    public PictureInfo(Parcel parcel) {
         readFromParcel(parcel);
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public double getLongitude() {
@@ -81,14 +85,14 @@ public class DailyData implements Parcelable {
         return 0;
     }
 
-    public static final Parcelable.Creator<DailyData> CREATOR
-            = new Parcelable.Creator<DailyData>() {
-        public DailyData createFromParcel(Parcel in) {
-            return new DailyData(in);
+    public static final Parcelable.Creator<PictureInfo> CREATOR
+            = new Parcelable.Creator<PictureInfo>() {
+        public PictureInfo createFromParcel(Parcel in) {
+            return new PictureInfo(in);
         }
 
-        public DailyData[] newArray(int size) {
-            return new DailyData[size];
+        public PictureInfo[] newArray(int size) {
+            return new PictureInfo[size];
         }
     };
 

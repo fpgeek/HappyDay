@@ -30,10 +30,6 @@
             android:name="com.toda.happyday.WriteActivity"
             android:label="@string/title_activity_write" >
         </activity>
-        <activity
-            android:name="com.toda.happyday.StickerActivity"
-            android:label="@string/title_activity_sticker" >
-        </activity>
     </application>
 
 </manifest>

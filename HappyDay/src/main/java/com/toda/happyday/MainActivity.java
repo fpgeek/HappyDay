@@ -2,12 +2,13 @@ package com.toda.happyday;
 
 import android.app.Activity;
 import android.app.ListFragment;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Parcel;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -16,6 +17,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import com.toda.happyday.db.CreateDailyInfoAsyncTask;
+import com.toda.happyday.db.DailyInfoDbHelper;
+import com.toda.happyday.model.PictureGroup;
+import com.toda.happyday.model.PictureInfo;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -23,7 +29,7 @@ import java.util.List;
 public class MainActivity extends Activity {
 
     private final static long TAKEN_DATE_DIFF_MS = 1000 * 60 * 60; // 사진이 묶이는 시간 차이 - 1시간
-    public static final String EXTRA_DAILY_DATA_ARRAY = "DailyDataArray";
+    public static final String EXTRA_PICTURE_GROUP = "DailyDataArray";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +69,8 @@ public class MainActivity extends Activity {
      */
     public static class PlaceholderFragment extends ListFragment {
 
-        private List<List<DailyData>> dailyDataGroup;
+        private List<PictureGroup> pictureGroups;
+        private DailyInfoDbHelper dbHelper;
 
         public PlaceholderFragment() {
         }
@@ -76,52 +83,84 @@ public class MainActivity extends Activity {
 
             Cursor imagesCursor = getImagesCursor();
 
-            dailyDataGroup = new ArrayList<List<DailyData>>(imagesCursor.getCount());
-            List<DailyData> dailyDataList = new ArrayList<DailyData>();;
+            dbHelper = new DailyInfoDbHelper(getActivity());
+            pictureGroups = new ArrayList<PictureGroup>(imagesCursor.getCount());
+            PictureGroup pictureInfoList = new PictureGroup();
             long prevTakenDateValue = 0;
             while(imagesCursor.moveToNext()) {
-                DailyData dailyData = createDailyData(imagesCursor);
+                PictureInfo pictureInfo = createPictureInfo(imagesCursor);
 
-                final long takenTime = dailyData.getDate().getTime();
+                final long takenTime = pictureInfo.getDate().getTime();
                 if (prevTakenDateValue == 0) {
                     prevTakenDateValue = takenTime;
                 }
 
                 if ((prevTakenDateValue - takenTime) <= TAKEN_DATE_DIFF_MS) {
                     prevTakenDateValue = takenTime;
-                    dailyDataList.add(dailyData);
+                    pictureInfoList.add(pictureInfo);
                 } else {
-                    dailyDataGroup.add(dailyDataList);
-                    dailyDataList = new ArrayList<DailyData>();
-                    dailyDataList.add(dailyData);
+                    pictureGroups.add(pictureInfoList);
+                    pictureInfoList = new PictureGroup();
+                    pictureInfoList.add(pictureInfo);
                     prevTakenDateValue = 0;
                 }
             }
-
             imagesCursor.close();
 
-            DailyListAdapter listAdapter = new DailyListAdapter(getActivity(), dailyDataGroup);
+            craetePictureGroupIds();
+
+            DailyListAdapter listAdapter = new DailyListAdapter(getActivity(), pictureGroups);
             setListAdapter(listAdapter);
 
             return rootView;
         }
 
-        private DailyData createDailyData(Cursor imagesCursor) {
-            DailyData dailyData = new DailyData();
+        private void craetePictureGroupIds() {
+            for (PictureGroup pictureGroup : pictureGroups) {
+                createPictureGroupId(pictureGroup);
+            }
+        }
+
+        private void createPictureGroupId(PictureGroup pictureGroup) {
+            SharedPreferences sharedPreferences = getActivity().getSharedPreferences(getString(R.string.preference_picture_info_key), Context.MODE_PRIVATE);
+            long pictureGroupId = getPictureGroupId(sharedPreferences, pictureGroup);
+            if (pictureGroupId == -1) {
+                new CreateDailyInfoAsyncTask(dbHelper, pictureGroup, sharedPreferences).execute();
+            } else {
+                pictureGroup.setId(pictureGroupId);
+            }
+        }
+
+        private long getPictureGroupId(SharedPreferences sharedPreferences, PictureGroup pictureGroup) {
+            for (PictureInfo pictureInfo : pictureGroup) {
+//                SharedPreferences.Editor editor = sharedPreferences.edit();
+//                editor.remove(String.valueOf(pictureInfo.getId()));
+//                editor.commit();
+                long value = sharedPreferences.getLong(String.valueOf(pictureInfo.getId()), -1);
+                if (value > -1) {
+                    return value;
+                }
+            }
+            return -1;
+        }
+
+        private PictureInfo createPictureInfo(Cursor imagesCursor) {
+            PictureInfo pictureInfo = new PictureInfo();
+            pictureInfo.setId(imagesCursor.getInt(imagesCursor.getColumnIndex(MediaStore.Images.Media._ID)));
 
             final long takenDateValue = imagesCursor.getLong(imagesCursor.getColumnIndex(MediaStore.Images.Media.DATE_TAKEN));
-            dailyData.setDate(new Date(takenDateValue));
+            pictureInfo.setDate(new Date(takenDateValue));
 
             String imagePath = imagesCursor.getString(imagesCursor.getColumnIndex(MediaStore.Images.Media.DATA));
-            dailyData.setImagePath(imagePath);
+            pictureInfo.setImagePath(imagePath);
 
             final double longitudeValue = imagesCursor.getDouble(imagesCursor.getColumnIndex(MediaStore.Images.Media.LONGITUDE));
-            dailyData.setLongitude(longitudeValue);
+            pictureInfo.setLongitude(longitudeValue);
 
             final double latitudeValue = imagesCursor.getDouble(imagesCursor.getColumnIndex(MediaStore.Images.Media.LATITUDE));
-            dailyData.setLatitude(latitudeValue);
+            pictureInfo.setLatitude(latitudeValue);
 
-            return dailyData;
+            return pictureInfo;
         }
 
         @Override
@@ -130,10 +169,8 @@ public class MainActivity extends Activity {
 
             Intent intent = new Intent(getActivity(), DailyActivity.class);
 
-            List<DailyData> dailyDataList = dailyDataGroup.get(position);
-            DailyData[] dailyDataArray = new DailyData[dailyDataList.size()];
-            dailyDataList.toArray(dailyDataArray);
-            intent.putExtra(EXTRA_DAILY_DATA_ARRAY, dailyDataArray);
+            PictureGroup pictureGroup = pictureGroups.get(position);
+            intent.putExtra(EXTRA_PICTURE_GROUP, (Parcelable)pictureGroup);
             startActivity(intent);
         }
 

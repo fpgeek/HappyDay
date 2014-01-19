@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -14,6 +13,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.toda.happyday.model.PictureGroup;
+import com.toda.happyday.model.PictureInfo;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,10 +26,10 @@ import java.util.Random;
 /**
  * Created by fpgeek on 2013. 12. 8..
  */
-public class DailyListAdapter extends ArrayAdapter<List<DailyData>> {
+public class DailyListAdapter extends ArrayAdapter<PictureGroup> {
 
     private Activity context;
-    private List<List<DailyData>> dailyDataGroup;
+    private List<PictureGroup> dailyDataGroup;
 
     private int windowWidth = 0;
     private int windowHeight = 0;
@@ -36,7 +38,7 @@ public class DailyListAdapter extends ArrayAdapter<List<DailyData>> {
 
     private static Bitmap mLoadingBitmap;
 
-    public DailyListAdapter(Activity context, List<List<DailyData>> dailyDataGroup) {
+    public DailyListAdapter(Activity context, List<PictureGroup> dailyDataGroup) {
         super(context, R.layout.daily_item, dailyDataGroup);
 
         this.context = context;
@@ -72,14 +74,14 @@ public class DailyListAdapter extends ArrayAdapter<List<DailyData>> {
             viewHolder = (ViewHolder)convertView.getTag();
         }
 
-        List<DailyData> dailyDataList = dailyDataGroup.get(position);
-        DailyData dailyData = dailyDataList.get(dailyDataIndexMap.get(position));
+        PictureGroup pictureGroup = dailyDataGroup.get(position);
+        PictureInfo pictureInfo = pictureGroup.get(dailyDataIndexMap.get(position));
 
-        viewHolder.fullDateTextView.setText(dailyData.getFullDateText());
-        viewHolder.dayTextView.setText(dailyData.getDayText());
-        viewHolder.timeTextView.setText(dailyData.getTimeText());
+        viewHolder.fullDateTextView.setText(pictureInfo.getFullDateText());
+        viewHolder.dayTextView.setText(pictureInfo.getDayText());
+        viewHolder.timeTextView.setText(pictureInfo.getTimeText());
 
-        final int[] imageOrgSize = getBitmapSize(dailyData.getImagePath());
+        final int[] imageOrgSize = getBitmapSize(pictureInfo.getImagePath());
 
         final int imageWidth = windowWidth;
         final double imageWidthRate = (double) windowWidth / (double)imageOrgSize[0];
@@ -90,12 +92,12 @@ public class DailyListAdapter extends ArrayAdapter<List<DailyData>> {
         viewHolder.pictureImageView.getLayoutParams().height = imageHeight;
 
         ListView listView = (ListView)parent;
-        new ImageLoadTask(viewHolder.pictureImageView, listView, position, isResizing(imageOrgSize[0], imageOrgSize[1])).execute(dailyData.getImagePath());
+        new ImageLoadTask(viewHolder.pictureImageView, listView, position, isResizing(imageOrgSize[0], imageOrgSize[1])).execute(pictureInfo.getImagePath());
 
         return convertView;
     }
 
-    private Map<Integer, Integer> makeDailyDataIndexMap(List<List<DailyData>> dailyDataGroup) {
+    private Map<Integer, Integer> makeDailyDataIndexMap(List<PictureGroup> dailyDataGroup) {
         Map<Integer, Integer> dailyDataIndexMap = new HashMap<Integer, Integer>(dailyDataGroup.size());
         final int dailyDataGroupSize = dailyDataGroup.size();
         for (int i=0; i<dailyDataGroupSize; i++) {
