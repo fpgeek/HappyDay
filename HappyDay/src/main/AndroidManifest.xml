@@ -22,6 +22,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.toda.happyday.DailyActivity"
+            android:label="@string/title_activity_daily" >
+        </activity>
+        <activity
+            android:name="com.toda.happyday.WriteActivity"
+            android:label="@string/title_activity_write" >
+        </activity>
+        <activity
+            android:name="com.toda.happyday.StickerActivity"
+            android:label="@string/title_activity_sticker" >
+        </activity>
     </application>
 
 </manifest>

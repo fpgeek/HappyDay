@@ -52,15 +52,6 @@ public class DailyListAdapter extends ArrayAdapter<List<DailyData>> {
         mLoadingBitmap = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.img_loading);
     }
 
-    private Map<Integer, Integer> makeDailyDataIndexMap(List<List<DailyData>> dailyDataGroup) {
-        Map<Integer, Integer> dailyDataIndexMap = new HashMap<Integer, Integer>(dailyDataGroup.size());
-        final int dailyDataGroupSize = dailyDataGroup.size();
-        for (int i=0; i<dailyDataGroupSize; i++) {
-            dailyDataIndexMap.put(i, random.nextInt(dailyDataGroup.get(i).size() - 1));
-        }
-        return dailyDataIndexMap;
-    }
-
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
@@ -74,6 +65,7 @@ public class DailyListAdapter extends ArrayAdapter<List<DailyData>> {
             viewHolder.dayTextView = (TextView)convertView.findViewById(R.id.day_text);
             viewHolder.timeTextView = (TextView)convertView.findViewById(R.id.time_text);
             viewHolder.pictureImageView = (ImageView)convertView.findViewById(R.id.picture);
+            viewHolder.position = position;
 
             convertView.setTag(viewHolder);
         } else {
@@ -103,6 +95,24 @@ public class DailyListAdapter extends ArrayAdapter<List<DailyData>> {
         return convertView;
     }
 
+    private Map<Integer, Integer> makeDailyDataIndexMap(List<List<DailyData>> dailyDataGroup) {
+        Map<Integer, Integer> dailyDataIndexMap = new HashMap<Integer, Integer>(dailyDataGroup.size());
+        final int dailyDataGroupSize = dailyDataGroup.size();
+        for (int i=0; i<dailyDataGroupSize; i++) {
+            final int index = selectRandomIndex(dailyDataGroup.get(i).size());
+            dailyDataIndexMap.put(i, index);
+        }
+        return dailyDataIndexMap;
+    }
+
+    private int selectRandomIndex(int size) {
+        if (size == 1) {
+            return 0;
+        }
+
+        return random.nextInt(size - 1);
+    }
+
     private boolean isResizing(int width, int height) {
         return (width > 1000 && height > 1000);
     }
@@ -112,6 +122,7 @@ public class DailyListAdapter extends ArrayAdapter<List<DailyData>> {
         public TextView dayTextView;
         public TextView timeTextView;
         public ImageView pictureImageView;
+        public int position;
     }
 
     private class ImageLoadTask extends AsyncTask<String, Void, Bitmap> {
