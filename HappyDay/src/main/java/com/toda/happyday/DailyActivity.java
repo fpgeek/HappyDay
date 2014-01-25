@@ -90,7 +90,7 @@ public class DailyActivity extends Activity {
                 Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_daily, container, false);
 
-            Parcelable parcelable = getActivity().getIntent().getParcelableExtra(MainActivity.EXTRA_PICTURE_GROUP);
+            Parcelable parcelable = getActivity().getIntent().getParcelableExtra( getString(R.string.extra_daily_data_array) );
             pictureGroup = (PictureGroup)parcelable;
 
             pictureGroup.loadFromDb(getActivity());
