@@ -166,7 +166,9 @@ public class PictureGroup extends ArrayList<PictureInfo> implements Parcelable {
 
             if (pictureGroup != null) {
                 TextView diaryText = (TextView)this.activity.findViewById(R.id.dairy_text);
-                diaryText.setText(pictureGroup.getDairyText());
+                if (diaryText != null) {
+                    diaryText.setText(pictureGroup.getDairyText());
+                }
             }
         }
     }

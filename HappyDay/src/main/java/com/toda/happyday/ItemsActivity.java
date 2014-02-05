@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -30,6 +31,7 @@ public class ItemsActivity extends Activity {
 
     private List<PictureGroup> pictureGroups;
 
+    private ListView onTouchListView;
     private ListView listViewLeft;
     private ListView listViewRight;
     private ItemsAdapter leftAdapter;
@@ -67,9 +69,11 @@ public class ItemsActivity extends Activity {
             if (v.equals(listViewLeft) && !dispatched) {
                 dispatched = true;
                 listViewRight.dispatchTouchEvent(event);
+                onTouchListView = listViewLeft;
             } else if (v.equals(listViewRight) && !dispatched) {
                 dispatched = true;
                 listViewLeft.dispatchTouchEvent(event);
+                onTouchListView = listViewRight;
             }
 
             dispatched = false;
@@ -134,11 +138,20 @@ public class ItemsActivity extends Activity {
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-            Intent intent = new Intent(view.getContext(), DailyActivity.class);
+            if (adapterView == onTouchListView) {
+                PictureGroup pictureGroup = null;
+                if (adapterView == listViewLeft) {
+                    pictureGroup = pictureGroups.get(i*2);
+                } else if (adapterView == listViewRight) {
+                    pictureGroup = pictureGroups.get(i*2 + 1);
+                }
 
-            PictureGroup pictureGroup = pictureGroups.get(i);
-            intent.putExtra(getString(R.string.extra_daily_data_array), (Parcelable)pictureGroup);
-            startActivity(intent);
+                if (pictureGroup != null) {
+                    Intent intent = new Intent(view.getContext(), DailyActivity.class);
+                    intent.putExtra(getString(R.string.extra_daily_data_array), (Parcelable)pictureGroup);
+                    startActivity(intent);
+                }
+            }
         }
     };
 
@@ -174,18 +187,7 @@ public class ItemsActivity extends Activity {
         List<PictureGroup> leftPictureGroups = new ArrayList<PictureGroup>(pictureGroups.size() / 2);
         List<PictureGroup> rightPictureGroups = new ArrayList<PictureGroup>(pictureGroups.size() / 2);
 
-        devidePictureGroups(pictureGroups, leftPictureGroups, rightPictureGroups);
-
-//        Integer[] leftItems = new Integer[]{R.drawable.ic_1, R.drawable.ic_2, R.drawable.ic_3, R.drawable.ic_4, R.drawable.ic_5};
-//        Integer[] rightItems = new Integer[]{R.drawable.ic_6, R.drawable.ic_7, R.drawable.ic_8, R.drawable.ic_9, R.drawable.ic_10};
-//
-//        leftAdapter = new ItemsAdapter(this, R.layout.item, leftItems);
-//        rightAdapter = new ItemsAdapter(this, R.layout.item, rightItems);
-//        listViewLeft.setAdapter(leftAdapter);
-//        listViewRight.setAdapter(rightAdapter);
-//
-//        leftViewsHeights = new int[leftItems.length];
-//        rightViewsHeights = new int[rightItems.length];
+        dividePictureGroups(pictureGroups, leftPictureGroups, rightPictureGroups);
 
         leftAdapter = new ItemsAdapter(this, leftPictureGroups);
         rightAdapter = new ItemsAdapter(this, rightPictureGroups);
@@ -196,7 +198,7 @@ public class ItemsActivity extends Activity {
         rightViewsHeights = new int[rightPictureGroups.size()];
     }
 
-    private void devidePictureGroups(List<PictureGroup> pictureGroups, List<PictureGroup> leftPictureGroups, List<PictureGroup> rightPictureGroups) {
+    private void dividePictureGroups(List<PictureGroup> pictureGroups, List<PictureGroup> leftPictureGroups, List<PictureGroup> rightPictureGroups) {
         final int size = pictureGroups.size();
         for (int i=0; i<size; i++) {
             if (i % 2 == 0) {
@@ -247,6 +249,9 @@ public class ItemsActivity extends Activity {
 
         final double latitudeValue = imagesCursor.getDouble(imagesCursor.getColumnIndex(MediaStore.Images.Media.LATITUDE));
         pictureInfo.setLatitude(latitudeValue);
+
+        Bitmap thumbnailBitmap = MediaStore.Images.Thumbnails.getThumbnail(getContentResolver(), pictureInfo.getId(), MediaStore.Images.Thumbnails.MICRO_KIND, null);
+        pictureInfo.setThumbnailBitmap(thumbnailBitmap);
 
         return pictureInfo;
     }

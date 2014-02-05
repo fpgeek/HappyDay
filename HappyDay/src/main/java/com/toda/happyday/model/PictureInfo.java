@@ -1,5 +1,6 @@
 package com.toda.happyday.model;
 
+import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -17,6 +18,8 @@ public class PictureInfo implements Parcelable {
     private double longitude;
     private double latitude;
     private String imagePath;
+
+    private Bitmap thumbnailBitmap;
 
     public PictureInfo() {
 
@@ -78,6 +81,14 @@ public class PictureInfo implements Parcelable {
 
     public String getImagePath() {
         return imagePath;
+    }
+
+    public Bitmap getThumbnailBitmap() {
+        return thumbnailBitmap;
+    }
+
+    public void setThumbnailBitmap(Bitmap thumbnailBitmap) {
+        this.thumbnailBitmap = thumbnailBitmap;
     }
 
     @Override

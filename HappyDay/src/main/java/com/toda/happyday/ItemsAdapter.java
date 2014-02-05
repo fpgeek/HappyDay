@@ -9,6 +9,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.util.DisplayMetrics;
+import android.util.Log;
+import android.util.LruCache;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -38,6 +40,7 @@ public class ItemsAdapter extends ArrayAdapter<PictureGroup> {
     private int windowHeight = 0;
     private Random random = new Random();
     private Map<Integer, Integer> dailyDataIndexMap;
+    private LruCache<String, Bitmap> memoryCache;
 
     private static Bitmap mLoadingBitmap;
 
@@ -56,6 +59,33 @@ public class ItemsAdapter extends ArrayAdapter<PictureGroup> {
         windowHeight = metrics.heightPixels;
 
         mLoadingBitmap = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.img_loading);
+
+        // Get max available VM memory, exceeding this amount will throw an
+        // OutOfMemory exception. Stored in kilobytes as LruCache takes an
+        // int in its constructor.
+        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+
+        // Use 1/8th of the available memory for this memory cache.
+        final int cacheSize = maxMemory / 8;
+
+        memoryCache = new LruCache<String, Bitmap>(cacheSize) {
+            @Override
+            protected int sizeOf(String key, Bitmap bitmap) {
+                // The cache size will be measured in kilobytes rather than
+                // number of items.
+                return bitmap.getByteCount() / 1024;
+            }
+        };
+    }
+
+    public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
+        if (getBitmapFromMemCache(key) == null) {
+            memoryCache.put(key, bitmap);
+        }
+    }
+
+    public Bitmap getBitmapFromMemCache(String key) {
+        return memoryCache.get(key);
     }
 
     @Override
@@ -90,13 +120,11 @@ public class ItemsAdapter extends ArrayAdapter<PictureGroup> {
         final double imageWidthRate = ((double) windowWidth / 2.0) / (double)bitmapOptions.outWidth;
         final int imageHeight = (int)(imageWidthRate * (double)bitmapOptions.outHeight);
 
-        viewHolder.pictureImageView.setImageBitmap(mLoadingBitmap);
         viewHolder.pictureImageView.getLayoutParams().width = imageWidth;
         viewHolder.pictureImageView.getLayoutParams().height = imageHeight;
 
         ListView listView = (ListView)parent;
-//        new BitmapWorkerTask(viewHolder.pictureImageView, listView, position).execute(pictureInfo.getImagePath());
-        loadBitmap(pictureInfo.getImagePath(), viewHolder.pictureImageView);
+        loadBitmap(pictureInfo, viewHolder.pictureImageView, listView, position);
 
         return convertView;
     }
@@ -170,54 +198,21 @@ public class ItemsAdapter extends ArrayAdapter<PictureGroup> {
         public int position;
     }
 
-//    private class ImageLoadTask extends AsyncTask<String, Void, Bitmap> {
-//
-//        private ImageView mPictureView;
-//        private ListView mListView;
-//        private int mPosition;
-//
-//        public ImageLoadTask(ImageView pictureView, ListView listView, int position) {
-//            mPictureView = pictureView;
-//            mListView = listView;
-//            mPosition = position;
-//        }
-//
-//        @Override
-//        protected Bitmap doInBackground(String... strings) {
-//            final String imagePath = strings[0];
-//
-//            if (shouldDecodeBitmap()) {
-//                return decodeSampledBitmapFromFile(imagePath, mPictureView.getLayoutParams().width, mPictureView.getLayoutParams().height);
-//            } else {
-//                return null;
-//            }
-//        }
-//
-//        @Override
-//        protected void onPostExecute(Bitmap result) {
-//            if (result != null) {
-//                if (shouldSetImageBitmap()) {
-//                    mPictureView.setImageBitmap(result);
-//                }
-//            }
-//        }
-//
-//        private boolean shouldDecodeBitmap() {
-//            return mListView.getFirstVisiblePosition() - 1 <= mPosition && mPosition <= mListView.getLastVisiblePosition() + 1;
-//        }
-//
-//        private boolean shouldSetImageBitmap() {
-//            return mListView.getFirstVisiblePosition() <= mPosition && mPosition <= mListView.getLastVisiblePosition();
-//        }
-//    }
+    public void loadBitmap(PictureInfo pictureInfo, ImageView imageView, ListView listView, int position) {
+        final String imagePath = pictureInfo.getImagePath();
+        boolean isCancelWork = cancelPotentialWork(imagePath, imageView);
 
-    public void loadBitmap(String imagePath, ImageView imageView) {
-        if (cancelPotentialWork(imagePath, imageView)) {
-            final BitmapWorkerTask task = new BitmapWorkerTask(imageView);
-            final AsyncDrawable asyncDrawable =
-                    new AsyncDrawable(getContext().getResources(), mLoadingBitmap, task);
-            imageView.setImageDrawable(asyncDrawable);
-            task.execute(imagePath);
+        final Bitmap bitmap = getBitmapFromMemCache(imagePath);
+        if (bitmap != null) {
+            imageView.setImageBitmap(bitmap);
+        } else {
+            if (isCancelWork) {
+                final BitmapWorkerTask task = new BitmapWorkerTask(imageView, listView, position);
+                final AsyncDrawable asyncDrawable =
+                        new AsyncDrawable(getContext().getResources(), pictureInfo.getThumbnailBitmap(), task);
+                imageView.setImageDrawable(asyncDrawable);
+                task.execute(imagePath);
+            }
         }
     }
 
@@ -226,7 +221,8 @@ public class ItemsAdapter extends ArrayAdapter<PictureGroup> {
 
         if (bitmapWorkerTask != null) {
             final String imagePath = bitmapWorkerTask.imagePath;
-            if (bitmapImagePath != imagePath) {
+
+            if (!bitmapImagePath.equals(imagePath)) {
                 // Cancel previous task
                 bitmapWorkerTask.cancel(true);
             } else {
@@ -252,10 +248,14 @@ public class ItemsAdapter extends ArrayAdapter<PictureGroup> {
     class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
         private final WeakReference<ImageView> imageViewReference;
         public String imagePath;
+        private ListView listView;
+        private int position;
 
-        public BitmapWorkerTask(ImageView imageView) {
+        public BitmapWorkerTask(ImageView imageView, ListView listView, int position) {
             // Use a WeakReference to ensure the ImageView can be garbage collected
             this.imageViewReference = new WeakReference<ImageView>(imageView);
+            this.listView = listView;
+            this.position = position;
         }
 
         // Decode image in background.
@@ -264,7 +264,11 @@ public class ItemsAdapter extends ArrayAdapter<PictureGroup> {
             imagePath = params[0];
             final ImageView imageView = imageViewReference.get();
             if (imageView != null) {
-                return decodeSampledBitmapFromFile(imagePath, imageView.getLayoutParams().width, imageView.getLayoutParams().height);
+                if (shouldDecodeBitmap()) {
+                    Bitmap bitmap = decodeSampledBitmapFromFile(imagePath, imageView.getLayoutParams().width, imageView.getLayoutParams().height);
+                    addBitmapToMemoryCache(imagePath, bitmap);
+                    return bitmap;
+                }
             }
             return null;
         }
@@ -284,6 +288,14 @@ public class ItemsAdapter extends ArrayAdapter<PictureGroup> {
                     imageView.setImageBitmap(bitmap);
                 }
             }
+        }
+
+        private boolean shouldDecodeBitmap() {
+            return listView.getFirstVisiblePosition() - 2 <= position && position <= listView.getLastVisiblePosition() + 2;
+        }
+
+        private boolean shouldSetImageBitmap() {
+            return listView.getFirstVisiblePosition() <= position && position <= listView.getLastVisiblePosition();
         }
     }
 
