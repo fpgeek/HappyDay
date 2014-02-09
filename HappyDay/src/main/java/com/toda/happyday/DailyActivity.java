@@ -35,7 +35,7 @@ import java.util.List;
 public class DailyActivity extends FragmentActivity {
 
     private static PlaceholderFragment placeholderFragment = null;
-    private static Integer[] STICKER_THUMB_IDS = {
+    private static Integer[] STICKER_IMAGE_IDS = {
             R.drawable.sticker_1, R.drawable.sticker_2,
             R.drawable.sticker_3, R.drawable.sticker_4,
             R.drawable.sticker_5, R.drawable.sticker_6,
@@ -114,6 +114,7 @@ public class DailyActivity extends FragmentActivity {
 
         private ViewPager stickerViewPager = null;
         private StickerCollectionPagerAdapter stickerCollectionPagerAdapter = null;
+        private ImageView stickerImage = null;
 
         public PlaceholderFragment() {
         }
@@ -136,9 +137,11 @@ public class DailyActivity extends FragmentActivity {
             }
 
             headerView = inflater.inflate(R.layout.diary, null, false);
+
             stickerViewPager = (ViewPager)rootView.findViewById(R.id.sticker_view_pager);
             stickerCollectionPagerAdapter = new StickerCollectionPagerAdapter( ((FragmentActivity)getActivity()).getSupportFragmentManager() );
             stickerViewPager.setAdapter(stickerCollectionPagerAdapter);
+            stickerImage = (ImageView)headerView.findViewById(R.id.sticker_image);
 
             return rootView;
         }
@@ -177,6 +180,10 @@ public class DailyActivity extends FragmentActivity {
         public ViewPager getStickerViewPager() {
             return stickerViewPager;
         }
+
+        public ImageView getStickerImage() {
+            return stickerImage;
+        }
     }
 
     public class StickerCollectionPagerAdapter extends FragmentStatePagerAdapter {
@@ -196,7 +203,7 @@ public class DailyActivity extends FragmentActivity {
 
         @Override
         public int getCount() {
-            return (STICKER_THUMB_IDS.length / STICKER_COUNT_PER_SCREEN) + 1;
+            return (STICKER_IMAGE_IDS.length / STICKER_COUNT_PER_SCREEN) + 1;
         }
 
 //        @Override
@@ -223,13 +230,14 @@ public class DailyActivity extends FragmentActivity {
 
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-            new SaveStickerTask(placeholderFragment.getPictureGroup().getId()).execute(i + (imageIndex * STICKER_COUNT_PER_SCREEN));
+            new SaveStickerTask(placeholderFragment.getPictureGroup().getId()).execute(STICKER_IMAGE_IDS[i + (imageIndex * STICKER_COUNT_PER_SCREEN)]);
         }
     }
 
     private class SaveStickerTask extends AsyncTask<Integer, Void, Boolean> {
 
         private long rowId;
+        private int stickerImageId;
 
         public SaveStickerTask(long rowId) {
             this.rowId = rowId;
@@ -237,11 +245,11 @@ public class DailyActivity extends FragmentActivity {
 
         @Override
         protected Boolean doInBackground(Integer... integers) {
-            int sticker_id = integers[0];
+            stickerImageId = integers[0];
             SQLiteDatabase db = dbHelper.getWritableDatabase();
 
             ContentValues values = new ContentValues();
-            values.put(DailyInfo.DailyEntry.COLUMN_NAME_STICKER, sticker_id);
+            values.put(DailyInfo.DailyEntry.COLUMN_NAME_STICKER, stickerImageId);
 
             String selection = DailyInfo.DailyEntry._ID + " = ?";
             String[] selectionArgs = { String.valueOf(rowId) };
@@ -262,6 +270,7 @@ public class DailyActivity extends FragmentActivity {
             super.onPostExecute(updateSuccess);
 
             if (updateSuccess) {
+                placeholderFragment.getStickerImage().setImageResource(stickerImageId);
                 openStickerView();
             }
         }
@@ -278,10 +287,10 @@ public class DailyActivity extends FragmentActivity {
 
         @Override
         public int getCount() {
-            if (STICKER_COUNT_PER_SCREEN * (index + 1) <= STICKER_THUMB_IDS.length) {
+            if (STICKER_COUNT_PER_SCREEN * (index + 1) <= STICKER_IMAGE_IDS.length) {
                 return STICKER_COUNT_PER_SCREEN;
             } else {
-                return (STICKER_THUMB_IDS.length % STICKER_COUNT_PER_SCREEN);
+                return (STICKER_IMAGE_IDS.length % STICKER_COUNT_PER_SCREEN);
             }
         }
 
@@ -299,7 +308,7 @@ public class DailyActivity extends FragmentActivity {
         public View getView(int position, View convertView, ViewGroup viewGroup) {
 
             final int imageIndex = position + (index * STICKER_COUNT_PER_SCREEN);
-            if (STICKER_THUMB_IDS.length <= imageIndex) {
+            if (STICKER_IMAGE_IDS.length <= imageIndex) {
                 return null;
             }
 
@@ -313,7 +322,7 @@ public class DailyActivity extends FragmentActivity {
                 imageView = (ImageView) convertView;
             }
 
-            imageView.setImageResource( STICKER_THUMB_IDS[position + (index * STICKER_COUNT_PER_SCREEN)] );
+            imageView.setImageResource( STICKER_IMAGE_IDS[position + (index * STICKER_COUNT_PER_SCREEN)] );
             return imageView;
         }
     }

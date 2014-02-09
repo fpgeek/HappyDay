@@ -57,6 +57,10 @@ public class PictureInfo implements Parcelable {
         return DateFormat.getDateInstance(DateFormat.FULL).format(date);
     }
 
+    public String getDateText() {
+        return DateFormat.getDateInstance(DateFormat.DATE_FIELD).format(date);
+    }
+
     public String getDayText() {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);

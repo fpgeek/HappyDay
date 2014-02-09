@@ -1,22 +1,26 @@
 package com.toda.happyday.model;
 
 import android.app.Activity;
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.toda.happyday.R;
 import com.toda.happyday.db.DailyInfo;
 import com.toda.happyday.db.DailyInfoDbHelper;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by fpgeek on 2014. 1. 19..
@@ -24,17 +28,13 @@ import java.util.List;
 public class PictureGroup extends ArrayList<PictureInfo> implements Parcelable {
 
     private long id;
-    private String dairyText;
+    private String dairyText = null;
     private int sticker;
+    private boolean hasSticker = false;
     private boolean isFavorite;
+    private String locationText = null;
 
     public PictureGroup() {
-    }
-
-    public PictureGroup(String dairyText, int sticker, boolean isFavorite) {
-        this.dairyText = dairyText;
-        this.sticker = sticker;
-        this.isFavorite = isFavorite;
     }
 
     public PictureGroup(Parcel parcel) {
@@ -66,7 +66,12 @@ public class PictureGroup extends ArrayList<PictureInfo> implements Parcelable {
     }
 
     public void setSticker(int sticker) {
+        this.hasSticker = true;
         this.sticker = sticker;
+    }
+
+    public boolean hasSticker() {
+        return hasSticker;
     }
 
     public boolean isFavorite() {
@@ -75,6 +80,14 @@ public class PictureGroup extends ArrayList<PictureInfo> implements Parcelable {
 
     public void setFavorite(boolean isFavorite) {
         this.isFavorite = isFavorite;
+    }
+
+    public String getLocationText() {
+        return locationText;
+    }
+
+    public void setLocationText(String locationText) {
+        this.locationText = locationText;
     }
 
     @Override
@@ -106,6 +119,11 @@ public class PictureGroup extends ArrayList<PictureInfo> implements Parcelable {
 
     public void loadFromDb(Activity activity) {
         new GetDairyTask(activity, this).execute(this.id);
+
+        Location location = new Location("");
+        location.setLatitude(this.get(0).getLatitude());
+        location.setLongitude(this.get(0).getLongitude());
+        new GetAddressTask(activity, this).execute(location);
     }
 
     private class GetDairyTask extends AsyncTask<Long, Void, PictureGroup> {
@@ -165,9 +183,100 @@ public class PictureGroup extends ArrayList<PictureInfo> implements Parcelable {
             super.onPostExecute(pictureGroup);
 
             if (pictureGroup != null) {
-                TextView diaryText = (TextView)this.activity.findViewById(R.id.dairy_text);
-                if (diaryText != null) {
-                    diaryText.setText(pictureGroup.getDairyText());
+                TextView diaryTextView = (TextView)this.activity.findViewById(R.id.dairy_text);
+                if (pictureGroup.getDairyText() != null) {
+                    diaryTextView.setText(pictureGroup.getDairyText());
+                }
+
+                TextView dateTextView = (TextView)this.activity.findViewById(R.id.date_text);
+                dateTextView.setText(pictureGroup.get(0).getDateText());
+
+                ImageView stickerImage = (ImageView)this.activity.findViewById(R.id.sticker_image);
+                if (pictureGroup.hasSticker()) {
+                    stickerImage.setImageResource(pictureGroup.getSticker());
+                }
+            }
+        }
+    }
+
+    protected class GetAddressTask extends AsyncTask<Location, Void, Address> {
+
+        // Store the context passed to the AsyncTask when the system instantiates it.
+        private Activity activity;
+        private PictureGroup pictureGroup;
+
+        // Constructor called by the system to instantiate the task
+        public GetAddressTask(Activity activity, PictureGroup pictureGroup) {
+
+            // Required by the semantics of AsyncTask
+            super();
+
+            // Set a Context for the background task
+            this.activity = activity;
+            this.pictureGroup = pictureGroup;
+        }
+
+        /**
+         * Get a geocoding service instance, pass latitude and longitude to it, format the returned
+         * address, and return the address to the UI thread.
+         */
+        @Override
+        protected Address doInBackground(Location... params) {
+            /*
+             * Get a new geocoding service instance, set for localized addresses. This example uses
+             * android.location.Geocoder, but other geocoders that conform to address standards
+             * can also be used.
+             */
+            Geocoder geocoder = new Geocoder(activity, Locale.getDefault());
+
+            // Get the current location from the input parameter list
+            Location location = params[0];
+
+            // Create a list to contain the result address
+            List <Address> addresses = null;
+
+            // Try to get an address for the current location. Catch IO or network problems.
+            try {
+
+                /*
+                 * Call the synchronous getFromLocation() method with the latitude and
+                 * longitude of the current location. Return at most 1 address.
+                 */
+                addresses = geocoder.getFromLocation(location.getLatitude(),
+                        location.getLongitude(), 1
+                );
+
+                // Catch network or other I/O problems.
+            } catch (IOException exception1) {
+                return null;
+                // Catch incorrect latitude or longitude values
+            } catch (IllegalArgumentException exception2) {
+                return null;
+            }
+            // If the reverse geocode returned an address
+            if (addresses != null && addresses.size() > 0) {
+
+                // Get the first address
+                Address address = addresses.get(0);
+                return address;
+
+                // If there aren't any addresses, post a message
+            } else {
+                return null;
+            }
+        }
+
+        /**
+         * A method that's called once doInBackground() completes. Set the text of the
+         * UI element that displays the address. This method runs on the UI thread.
+         */
+        @Override
+        protected void onPostExecute(Address address) {
+
+            if (address != null) {
+                TextView locationTextView = (TextView) this.activity.findViewById(R.id.location_text);
+                if (pictureGroup.getLocationText() != null) {
+                    locationTextView.setText(pictureGroup.getLocationText());
                 }
             }
         }

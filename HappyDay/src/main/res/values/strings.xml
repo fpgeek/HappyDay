@@ -16,5 +16,6 @@
     <string name="EXTRA_DAIRY_TEXT">DairyText</string>
     <string name="title_activity_picture_list">PictureListActivity</string>
     <string name="extra_daily_data_array">DailyDataArray</string>
+    <string name="latitude_longitude">%1$.8f, %2$.8f</string>
 
 </resources>
