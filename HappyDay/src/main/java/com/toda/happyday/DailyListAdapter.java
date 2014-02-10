@@ -63,9 +63,7 @@ public class DailyListAdapter extends ArrayAdapter<PictureGroup> {
             convertView = context.getLayoutInflater().inflate(R.layout.daily_item, null);
 
             viewHolder = new ViewHolder();
-            viewHolder.fullDateTextView = (TextView)convertView.findViewById(R.id.full_date_text);
             viewHolder.dayTextView = (TextView)convertView.findViewById(R.id.day_text);
-            viewHolder.timeTextView = (TextView)convertView.findViewById(R.id.time_text);
             viewHolder.pictureImageView = (ImageView)convertView.findViewById(R.id.picture);
             viewHolder.position = position;
 

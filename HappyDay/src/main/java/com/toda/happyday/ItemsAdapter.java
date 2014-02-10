@@ -96,10 +96,9 @@ public class ItemsAdapter extends ArrayAdapter<PictureGroup> {
             convertView = context.getLayoutInflater().inflate(R.layout.daily_item, null);
 
             viewHolder = new ViewHolder();
-            viewHolder.fullDateTextView = (TextView)convertView.findViewById(R.id.full_date_text);
             viewHolder.dayTextView = (TextView)convertView.findViewById(R.id.day_text);
-            viewHolder.timeTextView = (TextView)convertView.findViewById(R.id.time_text);
             viewHolder.pictureImageView = (ImageView)convertView.findViewById(R.id.picture);
+            viewHolder.stickerImageView = (ImageView)convertView.findViewById(R.id.sticker_thumb);
             viewHolder.position = position;
 
             convertView.setTag(viewHolder);
@@ -110,9 +109,10 @@ public class ItemsAdapter extends ArrayAdapter<PictureGroup> {
         PictureGroup pictureGroup = dailyDataGroup.get(position);
         PictureInfo pictureInfo = pictureGroup.get(dailyDataIndexMap.get(position));
 
-        viewHolder.fullDateTextView.setText(pictureInfo.getFullDateText());
         viewHolder.dayTextView.setText(pictureInfo.getDayText());
-        viewHolder.timeTextView.setText(pictureInfo.getTimeText());
+        if (pictureGroup.hasSticker()) {
+            viewHolder.stickerImageView.setImageResource(pictureGroup.getSticker());
+        }
 
         BitmapFactory.Options bitmapOptions = getBitmapOptions(pictureInfo.getImagePath());
 
@@ -191,10 +191,9 @@ public class ItemsAdapter extends ArrayAdapter<PictureGroup> {
     }
 
     private static class ViewHolder {
-        public TextView fullDateTextView;
         public TextView dayTextView;
-        public TextView timeTextView;
         public ImageView pictureImageView;
+        public ImageView stickerImageView;
         public int position;
     }
 
