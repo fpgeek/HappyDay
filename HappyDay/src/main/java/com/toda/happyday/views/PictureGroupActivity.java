@@ -8,6 +8,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.toda.happyday.R;
@@ -19,7 +20,8 @@ import java.util.List;
 
 public class PictureGroupActivity extends Activity {
 
-    PictureGroupPresenter mPictureGroupPresenter;
+    public final static int RESULT_CODE_FROM_DAILY_ACTIVITY = 1;
+    private PictureGroupPresenter mPictureGroupPresenter;
 
     private List<PictureGroup> mPictureGroups;
     private ListView onTouchListView;
@@ -28,19 +30,22 @@ public class PictureGroupActivity extends Activity {
     private PictureGroupAdapter leftAdapter;
     private PictureGroupAdapter rightAdapter;
 
-    int[] leftViewsHeights;
-    int[] rightViewsHeights;
+    private int[] leftViewsHeights;
+    private int[] rightViewsHeights;
+
+    private PictureGroup mShouldUpdatePictureGroup = null;
+    private View mShouldUpdateView = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.items_list);
 
-        listViewLeft = (ListView) findViewById(R.id.list_view_left);
-        listViewRight = (ListView) findViewById(R.id.list_view_right);
-
         mPictureGroupPresenter = new PictureGroupPresenter(this);
         mPictureGroupPresenter.loadPictureGroups();
+
+        listViewLeft = (ListView) findViewById(R.id.list_view_left);
+        listViewRight = (ListView) findViewById(R.id.list_view_right);
 
         listViewLeft.setOnTouchListener(touchListener);
         listViewRight.setOnTouchListener(touchListener);
@@ -137,13 +142,43 @@ public class PictureGroupActivity extends Activity {
                 }
 
                 if (pictureGroup != null) {
+                    mShouldUpdatePictureGroup = pictureGroup;
+                    mShouldUpdateView = view;
                     Intent intent = new Intent(view.getContext(), DailyActivity.class);
                     intent.putExtra(getString(R.string.extra_daily_data_array), (Parcelable)pictureGroup);
-                    startActivity(intent);
+                    startActivityForResult(intent, RESULT_CODE_FROM_DAILY_ACTIVITY);
                 }
             }
         }
     };
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == RESULT_CODE_FROM_DAILY_ACTIVITY) {
+            PictureGroup updatedPictureGroup = data.getParcelableExtra(DailyActivity.INTENT_EXTRA_NAME);
+            updateItemView(updatedPictureGroup);
+        }
+    }
+
+    private void updateItemView(PictureGroup pictureGroup) {
+        if (mShouldUpdatePictureGroup != null) {
+            mShouldUpdatePictureGroup.changeProperties(pictureGroup);
+        }
+
+        if (mShouldUpdateView != null) {
+            final int sticker = pictureGroup.getSticker();
+            ImageView stickerImageView = (ImageView)mShouldUpdateView.findViewById(R.id.sticker_thumb);
+            stickerImageView.setImageResource(sticker);
+
+
+            final String dairyText = pictureGroup.getDairyText();
+            if (dairyText != null) {
+                // TODO
+            }
+        }
+
+
+    }
 
     public void setPictureGroups(List<PictureGroup> pictureGroups) {
         mPictureGroups = pictureGroups;

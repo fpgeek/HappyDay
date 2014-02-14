@@ -27,7 +27,7 @@ public class Picture implements Parcelable {
     private double longitude;
     private double latitude;
     private String imagePath;
-    private Bitmap thumbnailBitmap;
+    private Bitmap thumbnailBitmap; // 다른 Activity에 전달할 때는 의도적으로 제외했음.
 
     private final static Uri DB_IMAGE_URI = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
     private final static String[] DB_PROJECTION = {
@@ -219,7 +219,6 @@ public class Picture implements Parcelable {
         parcel.writeDouble(longitude);
         parcel.writeDouble(latitude);
         parcel.writeString(imagePath);
-        parcel.writeParcelable(thumbnailBitmap, i);
     }
 
     private void readFromParcel(Parcel parcel) {
@@ -227,7 +226,6 @@ public class Picture implements Parcelable {
         this.longitude = parcel.readDouble();
         this.latitude = parcel.readDouble();
         this.imagePath = parcel.readString();
-        this.thumbnailBitmap = parcel.readParcelable(Bitmap.class.getClassLoader());
     }
 
 

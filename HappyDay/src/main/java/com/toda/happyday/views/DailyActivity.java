@@ -35,6 +35,7 @@ import java.util.List;
 
 public class DailyActivity extends FragmentActivity {
 
+    public final static String INTENT_EXTRA_NAME = "updatePictureGroup";
     private static PlaceholderFragment placeholderFragment = null;
     private static Integer[] STICKER_IMAGE_IDS = {
             R.drawable.sticker_1, R.drawable.sticker_2,
@@ -64,6 +65,15 @@ public class DailyActivity extends FragmentActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        Intent intent = new Intent();
+        PictureGroup pictureGroup = placeholderFragment.getPictureGroup();
+        intent.putExtra(DailyActivity.INTENT_EXTRA_NAME, (Parcelable)placeholderFragment.getPictureGroup());
+        setResult(PictureGroupActivity.RESULT_CODE_FROM_DAILY_ACTIVITY, intent);
+        super.onBackPressed();
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -89,12 +99,11 @@ public class DailyActivity extends FragmentActivity {
     }
 
     private void openStickerView() {
-        final int visibility = this.placeholderFragment.getStickerViewPager().getVisibility();
-        if (visibility == View.GONE) {
-            this.placeholderFragment.getStickerViewPager().setVisibility(View.VISIBLE);
-        } else {
-            this.placeholderFragment.getStickerViewPager().setVisibility(View.GONE);
-        }
+        this.placeholderFragment.getStickerViewPager().setVisibility(View.VISIBLE);
+    }
+
+    private void closeStickerView() {
+        this.placeholderFragment.getStickerViewPager().setVisibility(View.GONE);
     }
 
     private void openEditView() {
@@ -271,8 +280,9 @@ public class DailyActivity extends FragmentActivity {
             super.onPostExecute(updateSuccess);
 
             if (updateSuccess) {
+                placeholderFragment.getPictureGroup().setSticker(stickerImageId);
                 placeholderFragment.getStickerImage().setImageResource(stickerImageId);
-                openStickerView();
+                closeStickerView();
             }
         }
     }

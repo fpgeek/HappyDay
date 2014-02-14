@@ -110,9 +110,7 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
         Picture picture = pictureGroup.get(dailyDataIndexMap.get(position));
 
         viewHolder.dayTextView.setText(picture.getDayText());
-        if (pictureGroup.hasSticker()) {
-            viewHolder.stickerImageView.setImageResource(pictureGroup.getSticker());
-        }
+        viewHolder.stickerImageView.setImageResource(pictureGroup.getSticker());
 
         BitmapFactory.Options bitmapOptions = getBitmapOptions(picture.getImagePath());
 
@@ -183,6 +181,7 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
     }
 
     private int selectRandomIndex(int size) {
+        assert size > 0;
         if (size == 1) {
             return 0;
         }
