@@ -24,10 +24,10 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 
-import com.toda.happyday.db.DailyInfo;
-import com.toda.happyday.db.DailyInfoDbHelper;
-import com.toda.happyday.model.PictureGroup;
-import com.toda.happyday.model.PictureInfo;
+import com.toda.happyday.models.db.DailyInfo;
+import com.toda.happyday.models.db.DailyInfoDbHelper;
+import com.toda.happyday.models.PictureGroup;
+import com.toda.happyday.models.Picture;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -130,9 +130,9 @@ public class DailyActivity extends FragmentActivity {
             pictureGroup.loadFromDb(getActivity());
 
             pictureGroupList = new ArrayList<PictureGroup>(pictureGroup.size());
-            for (PictureInfo pictureInfo : pictureGroup) {
+            for (Picture picture : pictureGroup) {
                 PictureGroup pictureInfoList = new PictureGroup(1);
-                pictureInfoList.add(pictureInfo);
+                pictureInfoList.add(picture);
                 pictureGroupList.add(pictureInfoList);
             }
 
@@ -154,7 +154,7 @@ public class DailyActivity extends FragmentActivity {
                 getListView().addHeaderView(headerView);
             }
 
-            DailyListAdapter listAdapter = new DailyListAdapter(getActivity(), pictureGroupList);
+            DailyAdapter listAdapter = new DailyAdapter(getActivity(), pictureGroupList);
             setListAdapter(listAdapter);
         }
 

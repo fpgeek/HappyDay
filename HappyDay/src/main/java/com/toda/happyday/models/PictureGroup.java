@@ -1,7 +1,9 @@
-package com.toda.happyday.model;
+package com.toda.happyday.models;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Address;
@@ -14,8 +16,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.toda.happyday.R;
-import com.toda.happyday.db.DailyInfo;
-import com.toda.happyday.db.DailyInfoDbHelper;
+import com.toda.happyday.models.db.DailyInfo;
+import com.toda.happyday.models.db.DailyInfoDbHelper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,7 +27,7 @@ import java.util.Locale;
 /**
  * Created by fpgeek on 2014. 1. 19..
  */
-public class PictureGroup extends ArrayList<PictureInfo> implements Parcelable {
+public class PictureGroup extends ArrayList<Picture> implements Parcelable {
 
     private long id;
     private String dairyText = null;
@@ -33,6 +35,14 @@ public class PictureGroup extends ArrayList<PictureInfo> implements Parcelable {
     private boolean hasSticker = false;
     private boolean isFavorite;
     private String locationText = null;
+
+    private final static String[] DB_PROJECTION = {
+            DailyInfo.DailyEntry._ID,
+            DailyInfo.DailyEntry.COLUMN_NAME_DIARY_TEXT,
+            DailyInfo.DailyEntry.COLUMN_NAME_STICKER,
+            DailyInfo.DailyEntry.COLUMN_NAME_FAVORITE
+    };
+    private final static String[] DB_EMPTY_SELECTION_ARGS = {""};
 
     public PictureGroup() {
     }
@@ -43,6 +53,108 @@ public class PictureGroup extends ArrayList<PictureInfo> implements Parcelable {
 
     public PictureGroup(int size) {
         super(size);
+    }
+
+    public static List<PictureGroup> all(DailyInfoDbHelper dbHelper) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        if (db == null) { return null; }
+
+        Cursor cursor = getCursor(db, null, DB_EMPTY_SELECTION_ARGS, DailyInfo.DailyEntry._ID + " DESC");
+        List<PictureGroup> pictureGroupList = new ArrayList<PictureGroup>(cursor.getCount());
+        while(cursor.moveToNext()) {
+            PictureGroup pictureGroup = createPictureGroup(cursor);
+            pictureGroupList.add(pictureGroup);
+        }
+        cursor.close();
+        return pictureGroupList;
+    }
+
+    public static PictureGroup get(DailyInfoDbHelper dbHelper, final long id) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        if (db == null) { return null; }
+
+        String selection = DailyInfo.DailyEntry._ID + " = ?";
+        String[] selectionArgs = { String.valueOf(id) };
+
+        Cursor cursor = getCursor(db, selection, selectionArgs, DailyInfo.DailyEntry.COLUMN_NAME_FAVORITE + " DESC");
+        PictureGroup pictureGroup = createPictureGroup(cursor);
+        cursor.close();
+        return pictureGroup;
+    }
+
+    public static PictureGroup create(DailyInfoDbHelper dbHelper) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        if (db == null) { return null; }
+
+        ContentValues values = new ContentValues();
+        values.put(DailyInfo.DailyEntry.COLUMN_NAME_DIARY_TEXT, "");
+        values.put(DailyInfo.DailyEntry.COLUMN_NAME_STICKER, 0);
+        values.put(DailyInfo.DailyEntry.COLUMN_NAME_FAVORITE, 0);
+
+        final long id = db.insert(
+                DailyInfo.DailyEntry.TABLE_NAME,
+                DailyInfo.DailyEntry.COLUMN_NAME_NULLABLE,
+                values
+        );
+
+        return get(dbHelper, id);
+    }
+
+    public static PictureGroup get_or_create(DailyInfoDbHelper dbHelper, final long id) {
+        PictureGroup pictureGroup = get(dbHelper, id);
+        if (pictureGroup != null) { return pictureGroup; }
+
+        return create(dbHelper);
+    }
+
+    public static boolean update(DailyInfoDbHelper dbHelper, final long id) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        if (db == null) { return false; }
+
+        ContentValues values = new ContentValues();
+        values.put(DailyInfo.DailyEntry.COLUMN_NAME_STICKER, id);
+
+        String selection = DailyInfo.DailyEntry._ID + " = ?";
+        String[] selectionArgs = { String.valueOf(id) };
+
+        int count = db.update(
+                DailyInfo.DailyEntry.TABLE_NAME,
+                values,
+                selection,
+                selectionArgs
+        );
+
+        return count == 1;
+    }
+
+    private static Cursor getCursor(SQLiteDatabase db, final String selection, final String[] selectionArgs, final String sortOrder) {
+        return db.query(
+                DailyInfo.DailyEntry.TABLE_NAME,
+                DB_PROJECTION,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder
+        );
+    }
+
+    private static PictureGroup createPictureGroup(Cursor cursor) {
+        PictureGroup pictureGroup = new PictureGroup();
+        while(cursor.moveToNext()) {
+            final long id = cursor.getLong(cursor.getColumnIndex(DailyInfo.DailyEntry._ID));
+            pictureGroup.setId(id);
+
+            final String diaryText = cursor.getString(cursor.getColumnIndex(DailyInfo.DailyEntry.COLUMN_NAME_DIARY_TEXT));
+            pictureGroup.setDairyText(diaryText);
+
+            final int sticker = cursor.getInt(cursor.getColumnIndex(DailyInfo.DailyEntry.COLUMN_NAME_STICKER));
+            pictureGroup.setSticker(sticker);
+
+            final int favorite = cursor.getInt(cursor.getColumnIndex(DailyInfo.DailyEntry.COLUMN_NAME_FAVORITE));
+            pictureGroup.setFavorite(favorite == 1);
+        }
+        return pictureGroup;
     }
 
     public long getId() {

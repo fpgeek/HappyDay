@@ -1,4 +1,4 @@
-package com.toda.happyday.db;
+package com.toda.happyday.models.db;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

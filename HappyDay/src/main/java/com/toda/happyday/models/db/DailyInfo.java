@@ -1,4 +1,4 @@
-package com.toda.happyday.db;
+package com.toda.happyday.models.db;
 import android.provider.BaseColumns;
 
 /**

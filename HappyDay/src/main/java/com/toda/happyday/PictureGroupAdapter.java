@@ -9,7 +9,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.LruCache;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,8 +18,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.toda.happyday.model.PictureGroup;
-import com.toda.happyday.model.PictureInfo;
+import com.toda.happyday.models.PictureGroup;
+import com.toda.happyday.models.Picture;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -31,7 +30,7 @@ import java.util.Random;
 /**
  * Created by fpgeek on 2014. 1. 25..
  */
-public class ItemsAdapter extends ArrayAdapter<PictureGroup> {
+public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
 
     private Activity context;
     private List<PictureGroup> dailyDataGroup;
@@ -44,7 +43,7 @@ public class ItemsAdapter extends ArrayAdapter<PictureGroup> {
 
     private static Bitmap mLoadingBitmap;
 
-    public ItemsAdapter(Activity context, List<PictureGroup> dailyDataGroup) {
+    public PictureGroupAdapter(Activity context, List<PictureGroup> dailyDataGroup) {
         super(context, R.layout.daily_item, dailyDataGroup);
         this.context = context;
 
@@ -107,14 +106,14 @@ public class ItemsAdapter extends ArrayAdapter<PictureGroup> {
         }
 
         PictureGroup pictureGroup = dailyDataGroup.get(position);
-        PictureInfo pictureInfo = pictureGroup.get(dailyDataIndexMap.get(position));
+        Picture picture = pictureGroup.get(dailyDataIndexMap.get(position));
 
-        viewHolder.dayTextView.setText(pictureInfo.getDayText());
+        viewHolder.dayTextView.setText(picture.getDayText());
         if (pictureGroup.hasSticker()) {
             viewHolder.stickerImageView.setImageResource(pictureGroup.getSticker());
         }
 
-        BitmapFactory.Options bitmapOptions = getBitmapOptions(pictureInfo.getImagePath());
+        BitmapFactory.Options bitmapOptions = getBitmapOptions(picture.getImagePath());
 
         final int imageWidth = windowWidth / 2;
         final double imageWidthRate = ((double) windowWidth / 2.0) / (double)bitmapOptions.outWidth;
@@ -124,7 +123,7 @@ public class ItemsAdapter extends ArrayAdapter<PictureGroup> {
         viewHolder.pictureImageView.getLayoutParams().height = imageHeight;
 
         ListView listView = (ListView)parent;
-        loadBitmap(pictureInfo, viewHolder.pictureImageView, listView, position);
+        loadBitmap(picture, viewHolder.pictureImageView, listView, position);
 
         return convertView;
     }
@@ -197,8 +196,8 @@ public class ItemsAdapter extends ArrayAdapter<PictureGroup> {
         public int position;
     }
 
-    public void loadBitmap(PictureInfo pictureInfo, ImageView imageView, ListView listView, int position) {
-        final String imagePath = pictureInfo.getImagePath();
+    public void loadBitmap(Picture picture, ImageView imageView, ListView listView, int position) {
+        final String imagePath = picture.getImagePath();
         boolean isCancelWork = cancelPotentialWork(imagePath, imageView);
 
         final Bitmap bitmap = getBitmapFromMemCache(imagePath);
@@ -208,7 +207,7 @@ public class ItemsAdapter extends ArrayAdapter<PictureGroup> {
             if (isCancelWork) {
                 final BitmapWorkerTask task = new BitmapWorkerTask(imageView, listView, position);
                 final AsyncDrawable asyncDrawable =
-                        new AsyncDrawable(getContext().getResources(), pictureInfo.getThumbnailBitmap(), task);
+                        new AsyncDrawable(getContext().getResources(), picture.getThumbnailBitmap(), task);
                 imageView.setImageDrawable(asyncDrawable);
                 task.execute(imagePath);
             }

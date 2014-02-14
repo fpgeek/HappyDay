@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.toda.happyday.model;
+package com.toda.happyday.utils;
 
 import android.content.Context;
 import android.location.Location;

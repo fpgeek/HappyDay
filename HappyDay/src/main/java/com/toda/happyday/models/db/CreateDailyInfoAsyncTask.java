@@ -1,12 +1,12 @@
-package com.toda.happyday.db;
+package com.toda.happyday.models.db;
 
 import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 
-import com.toda.happyday.model.PictureGroup;
-import com.toda.happyday.model.PictureInfo;
+import com.toda.happyday.models.PictureGroup;
+import com.toda.happyday.models.Picture;
 
 /**
  * Created by fpgeek on 2014. 1. 19..
@@ -41,8 +41,8 @@ public class CreateDailyInfoAsyncTask extends AsyncTask<Void, Void, Boolean> {
         pictureGroup.setId(newRowId);
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        for (PictureInfo pictureInfo : pictureGroup) {
-            editor.putLong(String.valueOf(pictureInfo.getId()), pictureGroup.getId());
+        for (Picture picture : pictureGroup) {
+            editor.putLong(String.valueOf(picture.getId()), pictureGroup.getId());
         }
         editor.commit();
 

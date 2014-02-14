@@ -15,8 +15,8 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.EditText;
 
-import com.toda.happyday.db.DailyInfo;
-import com.toda.happyday.db.DailyInfoDbHelper;
+import com.toda.happyday.models.db.DailyInfo;
+import com.toda.happyday.models.db.DailyInfoDbHelper;
 
 public class WriteActivity extends Activity {
 

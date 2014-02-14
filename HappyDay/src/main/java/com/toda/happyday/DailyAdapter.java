@@ -14,8 +14,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.toda.happyday.model.PictureGroup;
-import com.toda.happyday.model.PictureInfo;
+import com.toda.happyday.models.PictureGroup;
+import com.toda.happyday.models.Picture;
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +26,7 @@ import java.util.Random;
 /**
  * Created by fpgeek on 2013. 12. 8..
  */
-public class DailyListAdapter extends ArrayAdapter<PictureGroup> {
+public class DailyAdapter extends ArrayAdapter<PictureGroup> {
 
     private Activity context;
     private List<PictureGroup> dailyDataGroup;
@@ -38,7 +38,7 @@ public class DailyListAdapter extends ArrayAdapter<PictureGroup> {
 
     private static Bitmap mLoadingBitmap;
 
-    public DailyListAdapter(Activity context, List<PictureGroup> dailyDataGroup) {
+    public DailyAdapter(Activity context, List<PictureGroup> dailyDataGroup) {
         super(context, R.layout.daily_item, dailyDataGroup);
 
         this.context = context;
@@ -73,13 +73,13 @@ public class DailyListAdapter extends ArrayAdapter<PictureGroup> {
         }
 
         PictureGroup pictureGroup = dailyDataGroup.get(position);
-        PictureInfo pictureInfo = pictureGroup.get(dailyDataIndexMap.get(position));
+        Picture picture = pictureGroup.get(dailyDataIndexMap.get(position));
 
-        viewHolder.fullDateTextView.setText(pictureInfo.getFullDateText());
-        viewHolder.dayTextView.setText(pictureInfo.getDayText());
-        viewHolder.timeTextView.setText(pictureInfo.getTimeText());
+        viewHolder.fullDateTextView.setText(picture.getFullDateText());
+        viewHolder.dayTextView.setText(picture.getDayText());
+        viewHolder.timeTextView.setText(picture.getTimeText());
 
-        final int[] imageOrgSize = getBitmapSize(pictureInfo.getImagePath());
+        final int[] imageOrgSize = getBitmapSize(picture.getImagePath());
 
         final int imageWidth = windowWidth;
         final double imageWidthRate = (double) windowWidth / (double)imageOrgSize[0];
@@ -90,7 +90,7 @@ public class DailyListAdapter extends ArrayAdapter<PictureGroup> {
         viewHolder.pictureImageView.getLayoutParams().height = imageHeight;
 
         ListView listView = (ListView)parent;
-        new ImageLoadTask(viewHolder.pictureImageView, listView, position, isResizing(imageOrgSize[0], imageOrgSize[1])).execute(pictureInfo.getImagePath());
+        new ImageLoadTask(viewHolder.pictureImageView, listView, position, isResizing(imageOrgSize[0], imageOrgSize[1])).execute(picture.getImagePath());
 
         return convertView;
     }

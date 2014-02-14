@@ -10,38 +10,34 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import com.toda.happyday.db.CreateDailyInfoAsyncTask;
-import com.toda.happyday.db.DailyInfoDbHelper;
-import com.toda.happyday.model.PictureGroup;
-import com.toda.happyday.model.PictureInfo;
+import com.toda.happyday.models.db.CreateDailyInfoAsyncTask;
+import com.toda.happyday.models.db.DailyInfoDbHelper;
+import com.toda.happyday.models.PictureGroup;
+import com.toda.happyday.models.Picture;
+import com.toda.happyday.presenters.PictureGroupPresenter;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class ItemsActivity extends Activity {
+public class PictureGroupActivity extends Activity {
 
-    private final static long TAKEN_DATE_DIFF_MS = 1000 * 60 * 60; // 사진이 묶이는 시간 차이 - 1시간
-
-    private List<PictureGroup> pictureGroups;
+    PictureGroupPresenter mPictureGroupPresenter;
 
     private ListView onTouchListView;
     private ListView listViewLeft;
     private ListView listViewRight;
-    private ItemsAdapter leftAdapter;
-    private ItemsAdapter rightAdapter;
+    private PictureGroupAdapter leftAdapter;
+    private PictureGroupAdapter rightAdapter;
 
     int[] leftViewsHeights;
     int[] rightViewsHeights;
-
-    private DailyInfoDbHelper dbHelper;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,7 +47,8 @@ public class ItemsActivity extends Activity {
         listViewLeft = (ListView) findViewById(R.id.list_view_left);
         listViewRight = (ListView) findViewById(R.id.list_view_right);
 
-        loadItems();
+        mPictureGroupPresenter = new PictureGroupPresenter(this);
+        mPictureGroupPresenter.loadPictureGroups();
 
         listViewLeft.setOnTouchListener(touchListener);
         listViewRight.setOnTouchListener(touchListener);
@@ -156,48 +153,48 @@ public class ItemsActivity extends Activity {
         }
     };
 
-    private void loadItems(){
-
-        Cursor imagesCursor = getImagesCursor();
-
-        dbHelper = new DailyInfoDbHelper(this);
-        pictureGroups = new ArrayList<PictureGroup>(imagesCursor.getCount());
-        PictureGroup pictureInfoList = new PictureGroup();
-        long prevTakenDateValue = 0;
-        while(imagesCursor.moveToNext()) {
-            PictureInfo pictureInfo = createPictureInfo(imagesCursor);
-
-            final long takenTime = pictureInfo.getDate().getTime();
-            if (prevTakenDateValue == 0) {
-                prevTakenDateValue = takenTime;
-            }
-
-            if ((prevTakenDateValue - takenTime) <= TAKEN_DATE_DIFF_MS) {
-                prevTakenDateValue = takenTime;
-                pictureInfoList.add(pictureInfo);
-            } else {
-                pictureGroups.add(pictureInfoList);
-                pictureInfoList = new PictureGroup();
-                pictureInfoList.add(pictureInfo);
-                prevTakenDateValue = 0;
-            }
-        }
-        imagesCursor.close();
-
-        craetePictureGroupIds(pictureGroups);
-        List<PictureGroup> leftPictureGroups = new ArrayList<PictureGroup>(pictureGroups.size() / 2);
-        List<PictureGroup> rightPictureGroups = new ArrayList<PictureGroup>(pictureGroups.size() / 2);
-
-        dividePictureGroups(pictureGroups, leftPictureGroups, rightPictureGroups);
-
-        leftAdapter = new ItemsAdapter(this, leftPictureGroups);
-        rightAdapter = new ItemsAdapter(this, rightPictureGroups);
-        listViewLeft.setAdapter(leftAdapter);
-        listViewRight.setAdapter(rightAdapter);
-
-        leftViewsHeights = new int[leftPictureGroups.size()];
-        rightViewsHeights = new int[rightPictureGroups.size()];
-    }
+//    private void loadItems(){
+//
+//        Cursor imagesCursor = getImagesCursor();
+//
+//        dbHelper = new DailyInfoDbHelper(this);
+//        pictureGroups = new ArrayList<PictureGroup>(imagesCursor.getCount());
+//        PictureGroup pictureInfoList = new PictureGroup();
+//        long prevTakenDateValue = 0;
+//        while(imagesCursor.moveToNext()) {
+//            Picture picture = createPictureInfo(imagesCursor);
+//
+//            final long takenTime = picture.getDate().getTime();
+//            if (prevTakenDateValue == 0) {
+//                prevTakenDateValue = takenTime;
+//            }
+//
+//            if ((prevTakenDateValue - takenTime) <= TAKEN_DATE_DIFF_MS) {
+//                prevTakenDateValue = takenTime;
+//                pictureInfoList.add(picture);
+//            } else {
+//                pictureGroups.add(pictureInfoList);
+//                pictureInfoList = new PictureGroup();
+//                pictureInfoList.add(picture);
+//                prevTakenDateValue = 0;
+//            }
+//        }
+//        imagesCursor.close();
+//
+//        craetePictureGroupIds(pictureGroups);
+//        List<PictureGroup> leftPictureGroups = new ArrayList<PictureGroup>(pictureGroups.size() / 2);
+//        List<PictureGroup> rightPictureGroups = new ArrayList<PictureGroup>(pictureGroups.size() / 2);
+//
+//        dividePictureGroups(pictureGroups, leftPictureGroups, rightPictureGroups);
+//
+//        leftAdapter = new PictureGroupAdapter(this, leftPictureGroups);
+//        rightAdapter = new PictureGroupAdapter(this, rightPictureGroups);
+//        listViewLeft.setAdapter(leftAdapter);
+//        listViewRight.setAdapter(rightAdapter);
+//
+//        leftViewsHeights = new int[leftPictureGroups.size()];
+//        rightViewsHeights = new int[rightPictureGroups.size()];
+//    }
 
     private void dividePictureGroups(List<PictureGroup> pictureGroups, List<PictureGroup> leftPictureGroups, List<PictureGroup> rightPictureGroups) {
         final int size = pictureGroups.size();
@@ -235,26 +232,26 @@ public class ItemsActivity extends Activity {
         );
     }
 
-    private PictureInfo createPictureInfo(Cursor imagesCursor) {
-        PictureInfo pictureInfo = new PictureInfo();
-        pictureInfo.setId(imagesCursor.getInt(imagesCursor.getColumnIndex(MediaStore.Images.Media._ID)));
+    private Picture createPictureInfo(Cursor imagesCursor) {
+        Picture picture = new Picture();
+        picture.setId(imagesCursor.getInt(imagesCursor.getColumnIndex(MediaStore.Images.Media._ID)));
 
         final long takenDateValue = imagesCursor.getLong(imagesCursor.getColumnIndex(MediaStore.Images.Media.DATE_TAKEN));
-        pictureInfo.setDate(new Date(takenDateValue));
+        picture.setDate(new Date(takenDateValue));
 
         String imagePath = imagesCursor.getString(imagesCursor.getColumnIndex(MediaStore.Images.Media.DATA));
-        pictureInfo.setImagePath(imagePath);
+        picture.setImagePath(imagePath);
 
         final double longitudeValue = imagesCursor.getDouble(imagesCursor.getColumnIndex(MediaStore.Images.Media.LONGITUDE));
-        pictureInfo.setLongitude(longitudeValue);
+        picture.setLongitude(longitudeValue);
 
         final double latitudeValue = imagesCursor.getDouble(imagesCursor.getColumnIndex(MediaStore.Images.Media.LATITUDE));
-        pictureInfo.setLatitude(latitudeValue);
+        picture.setLatitude(latitudeValue);
 
-        Bitmap thumbnailBitmap = MediaStore.Images.Thumbnails.getThumbnail(getContentResolver(), pictureInfo.getId(), MediaStore.Images.Thumbnails.MICRO_KIND, null);
-        pictureInfo.setThumbnailBitmap(thumbnailBitmap);
+        Bitmap thumbnailBitmap = MediaStore.Images.Thumbnails.getThumbnail(getContentResolver(), picture.getId(), MediaStore.Images.Thumbnails.MICRO_KIND, null);
+        picture.setThumbnailBitmap(thumbnailBitmap);
 
-        return pictureInfo;
+        return picture;
     }
 
     private void craetePictureGroupIds(List<PictureGroup> pictureGroups) {
@@ -274,11 +271,11 @@ public class ItemsActivity extends Activity {
     }
 
     private long getPictureGroupId(SharedPreferences sharedPreferences, PictureGroup pictureGroup) {
-        for (PictureInfo pictureInfo : pictureGroup) {
+        for (Picture picture : pictureGroup) {
 //                SharedPreferences.Editor editor = sharedPreferences.edit();
 //                editor.remove(String.valueOf(pictureInfo.getId()));
 //                editor.commit();
-            long value = sharedPreferences.getLong(String.valueOf(pictureInfo.getId()), -1);
+            long value = sharedPreferences.getLong(String.valueOf(picture.getId()), -1);
             if (value > -1) {
                 return value;
             }
@@ -286,4 +283,17 @@ public class ItemsActivity extends Activity {
         return -1;
     }
 
+    public void setPictureGroups(List<PictureGroup> pictureGroups) {
+        List<PictureGroup> leftPictureGroups = new ArrayList<PictureGroup>(pictureGroups.size() / 2);
+        List<PictureGroup> rightPictureGroups = new ArrayList<PictureGroup>(pictureGroups.size() / 2);
+        dividePictureGroups(pictureGroups, leftPictureGroups, rightPictureGroups);
+
+        leftAdapter = new PictureGroupAdapter(this, leftPictureGroups);
+        rightAdapter = new PictureGroupAdapter(this, rightPictureGroups);
+        listViewLeft.setAdapter(leftAdapter);
+        listViewRight.setAdapter(rightAdapter);
+
+        leftViewsHeights = new int[leftPictureGroups.size()];
+        rightViewsHeights = new int[rightPictureGroups.size()];
+    }
 }

@@ -1,4 +1,4 @@
-package com.toda.happyday.db;
+package com.toda.happyday.models.db;
 
 /**
  * Created by fpgeek on 2014. 1. 19..
