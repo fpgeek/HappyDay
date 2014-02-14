@@ -4,9 +4,12 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.MediaStore;
+
+import com.toda.happyday.async.AsyncPostExecute;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -37,7 +40,6 @@ public class Picture implements Parcelable {
             MediaStore.Images.Media.ORIENTATION,
             MediaStore.Images.Media.IS_PRIVATE
     };
-    private final static String[] DB_EMPTY_SELECTION_ARGS = {""};
     private final static String DB_DATE_ORDER_DESC = MediaStore.Images.Media.DATE_TAKEN + " DESC";
 
     public Picture() {
@@ -47,17 +49,38 @@ public class Picture implements Parcelable {
         readFromParcel(parcel);
     }
 
-    public static List<Picture> all(ContentResolver contentResolver) {
-        Cursor pictureCursor = getAllPictureCursor(contentResolver);
+    public static void all(ContentResolver contentResolver, AsyncPostExecute<List<Picture>> asyncPostExecute) {
+        new GetAllPicturesTask(contentResolver, asyncPostExecute).execute();
+    }
 
-        List<Picture> pictureList = new ArrayList<Picture>(pictureCursor.getCount());
-        while(pictureCursor.moveToNext()) {
-            Picture picture = createPictureInfo(pictureCursor, contentResolver);
-            pictureList.add(picture);
+    private static class GetAllPicturesTask extends AsyncTask<Void, Void, List<Picture>> {
+
+        private ContentResolver mContentResolver;
+        private AsyncPostExecute<List<Picture>> mAsyncPostExecute;
+
+        public GetAllPicturesTask(ContentResolver contentResolver, AsyncPostExecute<List<Picture>> asyncPostExecute) {
+            mContentResolver = contentResolver;
+            mAsyncPostExecute = asyncPostExecute;
         }
-        pictureCursor.close();
 
-        return pictureList;
+        @Override
+        protected List<Picture> doInBackground(Void... voids) {
+            Cursor pictureCursor = getAllPictureCursor(mContentResolver);
+
+            List<Picture> pictureList = new ArrayList<Picture>(pictureCursor.getCount());
+            while(pictureCursor.moveToNext()) {
+                Picture picture = createPictureInfo(pictureCursor, mContentResolver);
+                pictureList.add(picture);
+            }
+            pictureCursor.close();
+
+            return pictureList;
+        }
+
+        @Override
+        protected void onPostExecute(List<Picture> pictureList) {
+            mAsyncPostExecute.onPostExecute(pictureList);
+        }
     }
 
     public static Picture get(ContentResolver contentResolver, final long id) {
@@ -73,7 +96,7 @@ public class Picture implements Parcelable {
     }
 
     private static Cursor getAllPictureCursor(ContentResolver contentResolver) {
-        return getCursor(contentResolver, null, DB_EMPTY_SELECTION_ARGS, DB_DATE_ORDER_DESC);
+        return getCursor(contentResolver, null, null, DB_DATE_ORDER_DESC);
     }
 
     private static Cursor getCursor(ContentResolver contentResolver, final String selection, final String[] selectionArgs, final String sortOrder) {

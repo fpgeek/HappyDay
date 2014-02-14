@@ -1,4 +1,4 @@
-package com.toda.happyday;
+package com.toda.happyday.views;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.EditText;
 
+import com.toda.happyday.R;
 import com.toda.happyday.models.db.DailyInfo;
 import com.toda.happyday.models.db.DailyInfoDbHelper;
 

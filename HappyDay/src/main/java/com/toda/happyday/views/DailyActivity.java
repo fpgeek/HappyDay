@@ -1,4 +1,4 @@
-package com.toda.happyday;
+package com.toda.happyday.views;
 
 import android.app.ListFragment;
 import android.content.ContentValues;
@@ -24,6 +24,7 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 
+import com.toda.happyday.R;
 import com.toda.happyday.models.db.DailyInfo;
 import com.toda.happyday.models.db.DailyInfoDbHelper;
 import com.toda.happyday.models.PictureGroup;

@@ -1,4 +1,4 @@
-package com.toda.happyday;
+package com.toda.happyday.views;
 
 import android.app.Activity;
 import android.content.Context;
@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.toda.happyday.R;
 import com.toda.happyday.models.PictureGroup;
 import com.toda.happyday.models.Picture;
 
@@ -75,9 +76,7 @@ public class DailyAdapter extends ArrayAdapter<PictureGroup> {
         PictureGroup pictureGroup = dailyDataGroup.get(position);
         Picture picture = pictureGroup.get(dailyDataIndexMap.get(position));
 
-        viewHolder.fullDateTextView.setText(picture.getFullDateText());
         viewHolder.dayTextView.setText(picture.getDayText());
-        viewHolder.timeTextView.setText(picture.getTimeText());
 
         final int[] imageOrgSize = getBitmapSize(picture.getImagePath());
 
@@ -118,9 +117,7 @@ public class DailyAdapter extends ArrayAdapter<PictureGroup> {
     }
 
     private static class ViewHolder {
-        public TextView fullDateTextView;
         public TextView dayTextView;
-        public TextView timeTextView;
         public ImageView pictureImageView;
         public int position;
     }

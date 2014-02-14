@@ -3,11 +3,11 @@ package com.toda.happyday.presenters;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.toda.happyday.PictureGroupActivity;
+import com.toda.happyday.async.AsyncPostExecute;
+import com.toda.happyday.views.PictureGroupActivity;
 import com.toda.happyday.R;
 import com.toda.happyday.models.Picture;
 import com.toda.happyday.models.PictureGroup;
-import com.toda.happyday.models.db.CreateDailyInfoAsyncTask;
 import com.toda.happyday.models.db.DailyInfoDbHelper;
 
 import java.util.ArrayList;
@@ -22,6 +22,7 @@ public class PictureGroupPresenter {
 
     private PictureGroupActivity mPictureGroupActivity;
     private DailyInfoDbHelper mDbHelper;
+    private List<Picture> mPictureList;
     private final static long TAKEN_DATE_DIFF_MS = 1000 * 60 * 60; // 사진이 묶이는 시간 차이 - 1시간
 
     public PictureGroupPresenter(PictureGroupActivity pictureGroupActivity) {
@@ -29,31 +30,51 @@ public class PictureGroupPresenter {
         mDbHelper = new DailyInfoDbHelper(mPictureGroupActivity);
     }
 
-    public void loadPictureGroups() {
-        List<Picture> pictureList = Picture.all(mPictureGroupActivity.getContentResolver());
-        List<PictureGroup> pictureGroupList = PictureGroup.all(mDbHelper);
-
-        Map<Long, PictureGroup> pictureGroupHashMap = pictureGroupListToMap(pictureGroupList);
-        List<List<Picture>> pictureGroupListGroupByTimes = pictureListToListGroupByTime(pictureList);
-
-        SharedPreferences sharedPreferences = mPictureGroupActivity.getSharedPreferences(mPictureGroupActivity.getString(R.string.preference_picture_info_key), Context.MODE_PRIVATE);
-        for (List<Picture> picturesGroupByTime : pictureGroupListGroupByTimes) {
-            PictureGroup pictureGroup = getOrCreatePictureGroup(pictureGroupHashMap, sharedPreferences, picturesGroupByTime);
-            pictureGroup.addAll(picturesGroupByTime);
+    private AsyncPostExecute<List<Picture>> mOnPostGetPictureList = new AsyncPostExecute<List<Picture>>() {
+        @Override
+        public void onPostExecute(List<Picture> pictureList) {
+            mPictureList = pictureList;
+            PictureGroup.all(mDbHelper, mOnPostGetPictureGroupList);
         }
+    };
 
-        mPictureGroupActivity.setPictureGroups(pictureGroupList);
+    private AsyncPostExecute<List<PictureGroup>> mOnPostGetPictureGroupList = new AsyncPostExecute<List<PictureGroup>>() {
+        @Override
+        public void onPostExecute(List<PictureGroup> pictureGroupList) {
+
+            Map<Long, PictureGroup> pictureGroupHashMap = pictureGroupListToMap(pictureGroupList);
+            List<List<Picture>> pictureGroupListGroupByTimes = pictureListToListGroupByTime(mPictureList);
+
+            SharedPreferences sharedPreferences = mPictureGroupActivity.getSharedPreferences(mPictureGroupActivity.getString(R.string.preference_picture_info_key), Context.MODE_PRIVATE);
+
+            for (List<Picture> picturesGroupByTime : pictureGroupListGroupByTimes) {
+                final long pictureGroupId = getPictureGroupId(sharedPreferences, picturesGroupByTime);
+                if (pictureGroupId == -1) {
+                    PictureGroup pictureGroup = newCreatePictureGroup(sharedPreferences, picturesGroupByTime);
+                    pictureGroup.addAll(picturesGroupByTime);
+                    pictureGroupList.add(pictureGroup);
+                } else {
+                    PictureGroup pictureGroup = pictureGroupHashMap.get(pictureGroupId);
+                    pictureGroup.addAll(picturesGroupByTime);
+                }
+            }
+
+            mPictureGroupActivity.setPictureGroups(pictureGroupList);
+        }
+    };
+
+
+    public void loadPictureGroups() {
+        Picture.all(mPictureGroupActivity.getContentResolver(), mOnPostGetPictureList);
     }
 
-    private PictureGroup getOrCreatePictureGroup(Map<Long, PictureGroup> pictureGroupHashMap, SharedPreferences sharedPreferences, List<Picture> picturesGroupByTime) {
-        PictureGroup pictureGroup;
-        final long pictureGroupId = getPictureGroupId(sharedPreferences, picturesGroupByTime);
-
-        if (pictureGroupId == -1) {
-            pictureGroup = PictureGroup.create(mDbHelper);
-        } else {
-            pictureGroup = pictureGroupHashMap.get(pictureGroupId);
+    private PictureGroup newCreatePictureGroup(SharedPreferences sharedPreferences, List<Picture> picturesGroupByTime) {
+        PictureGroup pictureGroup = PictureGroup.create(mDbHelper);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        for (Picture picture : picturesGroupByTime) {
+            editor.putLong(String.valueOf(picture.getId()), pictureGroup.getId());
         }
+        editor.commit();
         return pictureGroup;
     }
 
@@ -80,7 +101,7 @@ public class PictureGroupPresenter {
                 prevTakenDateValue = 0;
             }
         }
-        return null;
+        return pictureGroupList;
     }
 
     private Map<Long, PictureGroup> pictureGroupListToMap(List<PictureGroup> pictureGroupList) {

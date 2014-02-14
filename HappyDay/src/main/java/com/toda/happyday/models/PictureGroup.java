@@ -1,6 +1,7 @@
 package com.toda.happyday.models;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -16,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.toda.happyday.R;
+import com.toda.happyday.async.AsyncPostExecute;
 import com.toda.happyday.models.db.DailyInfo;
 import com.toda.happyday.models.db.DailyInfoDbHelper;
 
@@ -42,7 +44,6 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
             DailyInfo.DailyEntry.COLUMN_NAME_STICKER,
             DailyInfo.DailyEntry.COLUMN_NAME_FAVORITE
     };
-    private final static String[] DB_EMPTY_SELECTION_ARGS = {""};
 
     public PictureGroup() {
     }
@@ -55,18 +56,39 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
         super(size);
     }
 
-    public static List<PictureGroup> all(DailyInfoDbHelper dbHelper) {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        if (db == null) { return null; }
+    public static void all(DailyInfoDbHelper dbHelper, AsyncPostExecute<List<PictureGroup>> asyncPostExecute) {
+        new GetAllPictureGroupsTask(dbHelper, asyncPostExecute).execute();
+    }
 
-        Cursor cursor = getCursor(db, null, DB_EMPTY_SELECTION_ARGS, DailyInfo.DailyEntry._ID + " DESC");
-        List<PictureGroup> pictureGroupList = new ArrayList<PictureGroup>(cursor.getCount());
-        while(cursor.moveToNext()) {
-            PictureGroup pictureGroup = createPictureGroup(cursor);
-            pictureGroupList.add(pictureGroup);
+    private static class GetAllPictureGroupsTask extends AsyncTask<Void, Void, List<PictureGroup>> {
+
+        private DailyInfoDbHelper mDbHelper;
+        private AsyncPostExecute<List<PictureGroup>> mAsyncPostExecute;
+
+        public GetAllPictureGroupsTask(DailyInfoDbHelper dbHelper, AsyncPostExecute<List<PictureGroup>> asyncPostExecute) {
+            mDbHelper = dbHelper;
+            mAsyncPostExecute = asyncPostExecute;
         }
-        cursor.close();
-        return pictureGroupList;
+
+        @Override
+        protected List<PictureGroup> doInBackground(Void... voids) {
+            SQLiteDatabase db = mDbHelper.getReadableDatabase();
+            if (db == null) { return null; }
+
+            Cursor cursor = getCursor(db, null, null, DailyInfo.DailyEntry._ID + " ASC");
+            List<PictureGroup> pictureGroupList = new ArrayList<PictureGroup>(cursor.getCount());
+            while(cursor.moveToNext()) {
+                PictureGroup pictureGroup = createPictureGroup(cursor);
+                pictureGroupList.add(pictureGroup);
+            }
+            cursor.close();
+            return pictureGroupList;
+        }
+
+        @Override
+        protected void onPostExecute(List<PictureGroup> pictureGroupList) {
+            mAsyncPostExecute.onPostExecute(pictureGroupList);
+        }
     }
 
     public static PictureGroup get(DailyInfoDbHelper dbHelper, final long id) {
@@ -77,8 +99,10 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
         String[] selectionArgs = { String.valueOf(id) };
 
         Cursor cursor = getCursor(db, selection, selectionArgs, DailyInfo.DailyEntry.COLUMN_NAME_FAVORITE + " DESC");
+        cursor.moveToNext();
         PictureGroup pictureGroup = createPictureGroup(cursor);
         cursor.close();
+        db.close();
         return pictureGroup;
     }
 
@@ -96,6 +120,7 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
                 DailyInfo.DailyEntry.COLUMN_NAME_NULLABLE,
                 values
         );
+        db.close();
 
         return get(dbHelper, id);
     }
@@ -141,19 +166,19 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
 
     private static PictureGroup createPictureGroup(Cursor cursor) {
         PictureGroup pictureGroup = new PictureGroup();
-        while(cursor.moveToNext()) {
-            final long id = cursor.getLong(cursor.getColumnIndex(DailyInfo.DailyEntry._ID));
-            pictureGroup.setId(id);
 
-            final String diaryText = cursor.getString(cursor.getColumnIndex(DailyInfo.DailyEntry.COLUMN_NAME_DIARY_TEXT));
-            pictureGroup.setDairyText(diaryText);
+        final long id = cursor.getLong(cursor.getColumnIndex(DailyInfo.DailyEntry._ID));
+        pictureGroup.setId(id);
 
-            final int sticker = cursor.getInt(cursor.getColumnIndex(DailyInfo.DailyEntry.COLUMN_NAME_STICKER));
-            pictureGroup.setSticker(sticker);
+        final String diaryText = cursor.getString(cursor.getColumnIndex(DailyInfo.DailyEntry.COLUMN_NAME_DIARY_TEXT));
+        pictureGroup.setDairyText(diaryText);
 
-            final int favorite = cursor.getInt(cursor.getColumnIndex(DailyInfo.DailyEntry.COLUMN_NAME_FAVORITE));
-            pictureGroup.setFavorite(favorite == 1);
-        }
+        final int sticker = cursor.getInt(cursor.getColumnIndex(DailyInfo.DailyEntry.COLUMN_NAME_STICKER));
+        pictureGroup.setSticker(sticker);
+
+        final int favorite = cursor.getInt(cursor.getColumnIndex(DailyInfo.DailyEntry.COLUMN_NAME_FAVORITE));
+        pictureGroup.setFavorite(favorite == 1);
+
         return pictureGroup;
     }
 
