@@ -23,10 +23,7 @@ import com.toda.happyday.models.PictureGroup;
 import com.toda.happyday.models.Picture;
 
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
 /**
  * Created by fpgeek on 2014. 1. 25..
@@ -34,23 +31,21 @@ import java.util.Random;
 public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
 
     private Activity context;
-    private List<PictureGroup> dailyDataGroup;
+    private List<PictureGroup> mPictureGroups;
 
     private int windowWidth = 0;
     private int windowHeight = 0;
-    private Random random = new Random();
-    private Map<Integer, Integer> dailyDataIndexMap;
     private LruCache<String, Bitmap> memoryCache;
 
     private static Bitmap mLoadingBitmap;
 
-    public PictureGroupAdapter(Activity context, List<PictureGroup> dailyDataGroup) {
-        super(context, R.layout.daily_item, dailyDataGroup);
+    public PictureGroupAdapter(Activity context, List<PictureGroup> pictureGroups) {
+        super(context, R.layout.daily_item, pictureGroups);
         this.context = context;
 
         this.context = context;
-        this.dailyDataGroup = dailyDataGroup;
-        this.dailyDataIndexMap = makeDailyDataIndexMap(dailyDataGroup);
+        this.mPictureGroups = pictureGroups;
+//        this.dailyDataIndexMap = mkeDailyDataIndexMap(pictureGroups);
 
         DisplayMetrics metrics = new DisplayMetrics();
         ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(metrics);
@@ -106,17 +101,15 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
             viewHolder = (ViewHolder)convertView.getTag();
         }
 
-        PictureGroup pictureGroup = dailyDataGroup.get(position);
-        Picture picture = pictureGroup.get(dailyDataIndexMap.get(position));
+        PictureGroup pictureGroup = mPictureGroups.get(position);
+        Picture picture = pictureGroup.getMainPicture();
 
         viewHolder.dayTextView.setText(picture.getDayText());
         viewHolder.stickerImageView.setImageResource(pictureGroup.getSticker());
 
-        BitmapFactory.Options bitmapOptions = getBitmapOptions(picture.getImagePath());
-
         final int imageWidth = windowWidth / 2;
-        final double imageWidthRate = ((double) windowWidth / 2.0) / (double)bitmapOptions.outWidth;
-        final int imageHeight = (int)(imageWidthRate * (double)bitmapOptions.outHeight);
+        final double imageWidthRate = ((double) windowWidth / 2.0) / (double)picture.getWidth();
+        final int imageHeight = (int)(imageWidthRate * (double)picture.getHeight());
 
         viewHolder.pictureImageView.getLayoutParams().width = imageWidth;
         viewHolder.pictureImageView.getLayoutParams().height = imageHeight;
@@ -168,25 +161,6 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
         }
 
         return inSampleSize;
-    }
-
-    private Map<Integer, Integer> makeDailyDataIndexMap(List<PictureGroup> dailyDataGroup) {
-        Map<Integer, Integer> dailyDataIndexMap = new HashMap<Integer, Integer>(dailyDataGroup.size());
-        final int dailyDataGroupSize = dailyDataGroup.size();
-        for (int i=0; i<dailyDataGroupSize; i++) {
-            final int index = selectRandomIndex(dailyDataGroup.get(i).size());
-            dailyDataIndexMap.put(i, index);
-        }
-        return dailyDataIndexMap;
-    }
-
-    private int selectRandomIndex(int size) {
-        assert size > 0;
-        if (size == 1) {
-            return 0;
-        }
-
-        return random.nextInt(size - 1);
     }
 
     private static class ViewHolder {

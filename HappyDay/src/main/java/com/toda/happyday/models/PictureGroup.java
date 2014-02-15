@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * Created by fpgeek on 2014. 1. 19..
@@ -44,6 +46,9 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
             DailyInfo.DailyEntry.COLUMN_NAME_FAVORITE
     };
 
+    private Random random = new Random();
+    private int mSelectedIndex = 0;
+
     public PictureGroup() {
     }
 
@@ -53,6 +58,34 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
 
     public PictureGroup(int size) {
         super(size);
+    }
+
+    public void selectMainPicture() {
+        mSelectedIndex = selectRandomIndex(this.size());
+    }
+
+//    public int getHeight() {
+//        int height = 0;
+//        for (Picture picture : this) {
+//            height += picture.getHeight();
+//        }
+//        return height;
+//    }
+
+    public int getMainPictureHeight() {
+        return getMainPicture().getHeight();
+    }
+
+    public Picture getMainPicture() {
+        return this.get(mSelectedIndex);
+    }
+
+    private int selectRandomIndex(int size) {
+        if (size == 1) {
+            return 0;
+        }
+
+        return random.nextInt(size - 1);
     }
 
     public void changeProperties(PictureGroup pictureGroup) {

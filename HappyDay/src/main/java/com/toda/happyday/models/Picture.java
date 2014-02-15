@@ -41,6 +41,8 @@ public class Picture implements Parcelable {
             MediaStore.Images.Media.IS_PRIVATE
     };
     private final static String DB_DATE_ORDER_DESC = MediaStore.Images.Media.DATE_TAKEN + " DESC";
+    private int width;
+    private int height;
 
     public Picture() {
     }
@@ -51,6 +53,22 @@ public class Picture implements Parcelable {
 
     public static void all(ContentResolver contentResolver, AsyncPostExecute<List<Picture>> asyncPostExecute) {
         new GetAllPicturesTask(contentResolver, asyncPostExecute).execute();
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 
     private static class GetAllPicturesTask extends AsyncTask<Void, Void, List<Picture>> {

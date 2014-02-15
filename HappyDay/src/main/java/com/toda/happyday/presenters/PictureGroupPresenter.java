@@ -2,6 +2,7 @@ package com.toda.happyday.presenters;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.BitmapFactory;
 
 import com.toda.happyday.async.AsyncPostExecute;
 import com.toda.happyday.views.PictureGroupActivity;
@@ -59,9 +60,26 @@ public class PictureGroupPresenter {
                 }
             }
 
+            for (PictureGroup pictureGroup : pictureGroupList) {
+                pictureGroup.selectMainPicture();
+
+                for (Picture picture : pictureGroup) {
+                    BitmapFactory.Options bitmapOptions = getBitmapOptions(picture.getImagePath());
+                    picture.setWidth(bitmapOptions.outWidth);
+                    picture.setHeight(bitmapOptions.outHeight);
+                }
+            }
+
             mPictureGroupActivity.setPictureGroups(pictureGroupList);
         }
     };
+
+    private static BitmapFactory.Options getBitmapOptions( String fileName ){
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(fileName, options);
+        return options;
+    }
 
 
     public void loadPictureGroups() {

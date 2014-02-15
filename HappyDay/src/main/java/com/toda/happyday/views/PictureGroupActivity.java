@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AbsListView;
@@ -25,13 +26,13 @@ public class PictureGroupActivity extends Activity {
 
     private List<PictureGroup> mPictureGroups;
     private ListView onTouchListView;
-    private ListView listViewLeft;
-    private ListView listViewRight;
-    private PictureGroupAdapter leftAdapter;
-    private PictureGroupAdapter rightAdapter;
+    private ListView mListViewLeft;
+    private ListView mListViewRight;
+    private PictureGroupAdapter mLeftAdapter;
+    private PictureGroupAdapter mRightAdapter;
 
-    private int[] leftViewsHeights;
-    private int[] rightViewsHeights;
+    private int[] mLeftViewsHeights;
+    private int[] mRightViewsHeights;
 
     private PictureGroup mShouldUpdatePictureGroup = null;
     private View mShouldUpdateView = null;
@@ -44,15 +45,15 @@ public class PictureGroupActivity extends Activity {
         mPictureGroupPresenter = new PictureGroupPresenter(this);
         mPictureGroupPresenter.loadPictureGroups();
 
-        listViewLeft = (ListView) findViewById(R.id.list_view_left);
-        listViewRight = (ListView) findViewById(R.id.list_view_right);
+        mListViewLeft = (ListView) findViewById(R.id.list_view_left);
+        mListViewRight = (ListView) findViewById(R.id.list_view_right);
 
-        listViewLeft.setOnTouchListener(touchListener);
-        listViewRight.setOnTouchListener(touchListener);
-        listViewLeft.setOnScrollListener(scrollListener);
-        listViewRight.setOnScrollListener(scrollListener);
-        listViewLeft.setOnItemClickListener(itemClickListener);
-        listViewRight.setOnItemClickListener(itemClickListener);
+        mListViewLeft.setOnTouchListener(touchListener);
+        mListViewRight.setOnTouchListener(touchListener);
+        mListViewLeft.setOnScrollListener(scrollListener);
+        mListViewRight.setOnScrollListener(scrollListener);
+        mListViewLeft.setOnItemClickListener(itemClickListener);
+        mListViewRight.setOnItemClickListener(itemClickListener);
     }
 
     // Passing the touch event to the opposite list
@@ -61,14 +62,14 @@ public class PictureGroupActivity extends Activity {
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            if (v.equals(listViewLeft) && !dispatched) {
+            if (v.equals(mListViewLeft) && !dispatched) {
                 dispatched = true;
-                listViewRight.dispatchTouchEvent(event);
-                onTouchListView = listViewLeft;
-            } else if (v.equals(listViewRight) && !dispatched) {
+                mListViewRight.dispatchTouchEvent(event);
+                onTouchListView = mListViewLeft;
+            } else if (v.equals(mListViewRight) && !dispatched) {
                 dispatched = true;
-                listViewLeft.dispatchTouchEvent(event);
-                onTouchListView = listViewRight;
+                mListViewLeft.dispatchTouchEvent(event);
+                onTouchListView = mListViewRight;
             }
 
             dispatched = false;
@@ -92,36 +93,36 @@ public class PictureGroupActivity extends Activity {
                              int visibleItemCount, int totalItemCount) {
 
             if (view.getChildAt(0) != null) {
-                if (view.equals(listViewLeft) ){
-                    leftViewsHeights[view.getFirstVisiblePosition()] = view.getChildAt(0).getHeight();
+                if (view.equals(mListViewLeft) ){
+                    mLeftViewsHeights[view.getFirstVisiblePosition()] = view.getChildAt(0).getHeight();
 
                     int h = 0;
-                    for (int i = 0; i < listViewRight.getFirstVisiblePosition(); i++) {
-                        h += rightViewsHeights[i];
+                    for (int i = 0; i < mListViewRight.getFirstVisiblePosition(); i++) {
+                        h += mRightViewsHeights[i];
                     }
 
                     int hi = 0;
-                    for (int i = 0; i < listViewLeft.getFirstVisiblePosition(); i++) {
-                        hi += leftViewsHeights[i];
+                    for (int i = 0; i < mListViewLeft.getFirstVisiblePosition(); i++) {
+                        hi += mLeftViewsHeights[i];
                     }
 
                     int top = h - hi + view.getChildAt(0).getTop();
-                    listViewRight.setSelectionFromTop(listViewRight.getFirstVisiblePosition(), top);
-                } else if (view.equals(listViewRight)) {
-                    rightViewsHeights[view.getFirstVisiblePosition()] = view.getChildAt(0).getHeight();
+                    mListViewRight.setSelectionFromTop(mListViewRight.getFirstVisiblePosition(), top);
+                } else if (view.equals(mListViewRight)) {
+                    mRightViewsHeights[view.getFirstVisiblePosition()] = view.getChildAt(0).getHeight();
 
                     int h = 0;
-                    for (int i = 0; i < listViewLeft.getFirstVisiblePosition(); i++) {
-                        h += leftViewsHeights[i];
+                    for (int i = 0; i < mListViewLeft.getFirstVisiblePosition(); i++) {
+                        h += mLeftViewsHeights[i];
                     }
 
                     int hi = 0;
-                    for (int i = 0; i < listViewRight.getFirstVisiblePosition(); i++) {
-                        hi += rightViewsHeights[i];
+                    for (int i = 0; i < mListViewRight.getFirstVisiblePosition(); i++) {
+                        hi += mRightViewsHeights[i];
                     }
 
                     int top = h - hi + view.getChildAt(0).getTop();
-                    listViewLeft.setSelectionFromTop(listViewLeft.getFirstVisiblePosition(), top);
+                    mListViewLeft.setSelectionFromTop(mListViewLeft.getFirstVisiblePosition(), top);
                 }
 
             }
@@ -134,12 +135,11 @@ public class PictureGroupActivity extends Activity {
         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
             if (adapterView == onTouchListView) {
-                PictureGroup pictureGroup = null;
-                if (adapterView == listViewLeft) {
-                    pictureGroup = mPictureGroups.get(i*2);
-                } else if (adapterView == listViewRight) {
-                    pictureGroup = mPictureGroups.get(i*2 + 1);
-                }
+
+                final int clickedPictureGroupIndex = getClickPictureGroupIndex(adapterView, i);
+                if (clickedPictureGroupIndex >= mPictureGroups.size()) { return; }
+
+                PictureGroup pictureGroup = mPictureGroups.get(clickedPictureGroupIndex);
 
                 if (pictureGroup != null) {
                     mShouldUpdatePictureGroup = pictureGroup;
@@ -151,6 +151,15 @@ public class PictureGroupActivity extends Activity {
             }
         }
     };
+
+    private int getClickPictureGroupIndex(AdapterView<?> adapterView, int i) {
+        if (adapterView == mListViewLeft) {
+            return i*2;
+        } else if (adapterView == mListViewRight) {
+            return i*2 + 1;
+        }
+        return 0;
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -176,8 +185,6 @@ public class PictureGroupActivity extends Activity {
                 // TODO
             }
         }
-
-
     }
 
     public void setPictureGroups(List<PictureGroup> pictureGroups) {
@@ -187,13 +194,40 @@ public class PictureGroupActivity extends Activity {
         List<PictureGroup> rightPictureGroups = new ArrayList<PictureGroup>(pictureGroups.size() / 2);
         dividePictureGroups(pictureGroups, leftPictureGroups, rightPictureGroups);
 
-        leftAdapter = new PictureGroupAdapter(this, leftPictureGroups);
-        rightAdapter = new PictureGroupAdapter(this, rightPictureGroups);
-        listViewLeft.setAdapter(leftAdapter);
-        listViewRight.setAdapter(rightAdapter);
+        final int leftPictureGroupsHeight = getMainPicturesHeight(leftPictureGroups);
+        final int rightPictureGroupsHeight = getMainPicturesHeight(rightPictureGroups);
 
-        leftViewsHeights = new int[leftPictureGroups.size()];
-        rightViewsHeights = new int[rightPictureGroups.size()];
+        Log.i("GOODOI", "left : " + leftPictureGroupsHeight);
+        Log.i("GOODOI", "right : " + rightPictureGroupsHeight);
+
+        int heightDiff = leftPictureGroupsHeight - rightPictureGroupsHeight;
+        View footerView = getLayoutInflater().inflate(R.layout.picture_last, null);
+        ImageView imageView = (ImageView)footerView.findViewById(R.id.picture_last_image);
+
+        if (heightDiff > 0) {
+            mLeftViewsHeights = new int[leftPictureGroups.size()];
+            mRightViewsHeights = new int[rightPictureGroups.size() + 1];
+            imageView.getLayoutParams().height = heightDiff;
+            mListViewRight.addFooterView(footerView);
+        } else if (heightDiff < 0) {
+            mLeftViewsHeights = new int[leftPictureGroups.size() + 1];
+            mRightViewsHeights = new int[rightPictureGroups.size()];
+            imageView.getLayoutParams().height = -heightDiff;
+            mListViewLeft.addFooterView(footerView);
+        }
+
+        mLeftAdapter = new PictureGroupAdapter(this, leftPictureGroups);
+        mRightAdapter = new PictureGroupAdapter(this, rightPictureGroups);
+        mListViewLeft.setAdapter(mLeftAdapter);
+        mListViewRight.setAdapter(mRightAdapter);
+    }
+
+    private int getMainPicturesHeight(List<PictureGroup> pictureGroupList) {
+        int height = 0;
+        for (PictureGroup pictureGroup : pictureGroupList) {
+            height += pictureGroup.getMainPictureHeight();
+        }
+        return height;
     }
 
     private void dividePictureGroups(List<PictureGroup> pictureGroups, List<PictureGroup> leftPictureGroups, List<PictureGroup> rightPictureGroups) {

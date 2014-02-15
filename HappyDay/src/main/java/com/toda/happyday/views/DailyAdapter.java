@@ -18,10 +18,7 @@ import com.toda.happyday.R;
 import com.toda.happyday.models.PictureGroup;
 import com.toda.happyday.models.Picture;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
 
 /**
@@ -34,8 +31,6 @@ public class DailyAdapter extends ArrayAdapter<PictureGroup> {
 
     private int windowWidth = 0;
     private int windowHeight = 0;
-    private Random random = new Random();
-    private Map<Integer, Integer> dailyDataIndexMap;
 
     private static Bitmap mLoadingBitmap;
 
@@ -44,7 +39,7 @@ public class DailyAdapter extends ArrayAdapter<PictureGroup> {
 
         this.context = context;
         this.dailyDataGroup = dailyDataGroup;
-        this.dailyDataIndexMap = makeDailyDataIndexMap(dailyDataGroup);
+//        this.dailyDataIndexMap = makeDailyDataIndexMap(dailyDataGroup);
 
         DisplayMetrics metrics = new DisplayMetrics();
         ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(metrics);
@@ -74,7 +69,7 @@ public class DailyAdapter extends ArrayAdapter<PictureGroup> {
         }
 
         PictureGroup pictureGroup = dailyDataGroup.get(position);
-        Picture picture = pictureGroup.get(dailyDataIndexMap.get(position));
+        Picture picture =  pictureGroup.getMainPicture();
 
         viewHolder.dayTextView.setText(picture.getDayText());
 
@@ -92,24 +87,6 @@ public class DailyAdapter extends ArrayAdapter<PictureGroup> {
         new ImageLoadTask(viewHolder.pictureImageView, listView, position, isResizing(imageOrgSize[0], imageOrgSize[1])).execute(picture.getImagePath());
 
         return convertView;
-    }
-
-    private Map<Integer, Integer> makeDailyDataIndexMap(List<PictureGroup> dailyDataGroup) {
-        Map<Integer, Integer> dailyDataIndexMap = new HashMap<Integer, Integer>(dailyDataGroup.size());
-        final int dailyDataGroupSize = dailyDataGroup.size();
-        for (int i=0; i<dailyDataGroupSize; i++) {
-            final int index = selectRandomIndex(dailyDataGroup.get(i).size());
-            dailyDataIndexMap.put(i, index);
-        }
-        return dailyDataIndexMap;
-    }
-
-    private int selectRandomIndex(int size) {
-        if (size == 1) {
-            return 0;
-        }
-
-        return random.nextInt(size - 1);
     }
 
     private boolean isResizing(int width, int height) {

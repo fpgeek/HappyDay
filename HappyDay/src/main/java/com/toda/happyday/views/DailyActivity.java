@@ -147,11 +147,12 @@ public class DailyActivity extends FragmentActivity {
             }
 
             headerView = inflater.inflate(R.layout.diary, null, false);
+            stickerImage = (ImageView)headerView.findViewById(R.id.sticker_image);
 
             stickerViewPager = (ViewPager)rootView.findViewById(R.id.sticker_view_pager);
             stickerCollectionPagerAdapter = new StickerCollectionPagerAdapter( ((FragmentActivity)getActivity()).getSupportFragmentManager() );
             stickerViewPager.setAdapter(stickerCollectionPagerAdapter);
-            stickerImage = (ImageView)headerView.findViewById(R.id.sticker_image);
+
 
             return rootView;
         }
