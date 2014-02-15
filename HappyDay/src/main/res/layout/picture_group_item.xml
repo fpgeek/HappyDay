@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="fill_parent"
+    android:layout_width="fill_parent"
+    android:orientation="vertical">
+    <FrameLayout
+        android:layout_height="wrap_content"
+        android:layout_width="fill_parent">
+
+        <ImageView android:id="@+id/picture"
+            android:layout_height="fill_parent"
+            android:layout_width="fill_parent"
+            android:scaleType="fitXY"/>
+
+        <!--<TextView android:id="@+id/time_text"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_gravity="bottom|right"-->
+            <!--android:layout_marginRight="10dip"-->
+            <!--android:layout_marginBottom="80dip"-->
+            <!--android:textSize="12sp"-->
+            <!--android:textColor="@android:color/white"/>-->
+
+        <LinearLayout
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="bottom|right"
+            >
+
+            <ImageView android:id="@+id/sticker_thumb"
+                android:layout_height="wrap_content"
+                android:layout_width="40dp"
+                android:layout_gravity="bottom|center"
+                android:layout_marginRight="10dp"/>
+
+            <TextView android:id="@+id/day_text"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_gravity="bottom|right"
+                android:layout_marginRight="10dip"
+                android:layout_marginBottom="10dip"
+                android:textSize="50sp"
+                android:textColor="@android:color/white"/>
+        </LinearLayout>
+
+
+
+        <!--<TextView android:id="@+id/full_date_text"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_gravity="bottom|right"-->
+            <!--android:layout_marginRight="10dip"-->
+            <!--android:layout_marginBottom="10dip"-->
+            <!--android:textSize="12sp"-->
+            <!--android:textColor="@android:color/white"/>-->
+
+    </FrameLayout>
+
+    <TextView android:id="@+id/dairy_text"
+        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:textSize="20sp"/>
+</LinearLayout>

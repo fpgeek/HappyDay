@@ -3,6 +3,7 @@ package com.toda.happyday.views;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -21,6 +22,8 @@ import com.toda.happyday.models.db.DailyInfoDbHelper;
 
 public class WriteActivity extends Activity {
 
+    public static final int RESULT_CODE_FROM_WRITE_ACTIVITY = 20;
+    public static final String INTENT_EXTRA_UPDATE_DAIRY_TEXT_NAME = "updateDairyText";
     private DailyInfoDbHelper dbHelper = null;
     private long dailyInfoID;
     private static PlaceholderFragment placeholderFragment = null;
@@ -99,6 +102,9 @@ public class WriteActivity extends Activity {
             super.onPostExecute(updateSuccess);
 
             if (updateSuccess) {
+                Intent intent = new Intent();
+                intent.putExtra(INTENT_EXTRA_UPDATE_DAIRY_TEXT_NAME, placeholderFragment.getDiaryEditText().getText().toString());
+                setResult(RESULT_CODE_FROM_WRITE_ACTIVITY, intent);
                 finish();
             }
         }

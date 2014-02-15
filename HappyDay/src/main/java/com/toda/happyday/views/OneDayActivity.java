@@ -23,18 +23,17 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.toda.happyday.R;
 import com.toda.happyday.models.db.DailyInfo;
 import com.toda.happyday.models.db.DailyInfoDbHelper;
 import com.toda.happyday.models.PictureGroup;
-import com.toda.happyday.models.Picture;
 
-import java.util.ArrayList;
-import java.util.List;
+public class OneDayActivity extends FragmentActivity {
 
-public class DailyActivity extends FragmentActivity {
-
+    private final static int REQUEST_CODE_TO_WRITE_ACTIVITY = 10;
+    public final static int RESULT_CODE_FROM_ONE_DAY_ACTIVITY = 11;
     public final static String INTENT_EXTRA_NAME = "updatePictureGroup";
     private static PlaceholderFragment placeholderFragment = null;
     private static Integer[] STICKER_IMAGE_IDS = {
@@ -48,6 +47,7 @@ public class DailyActivity extends FragmentActivity {
     };
     private static final int STICKER_COUNT_PER_SCREEN = 10;
     private DailyInfoDbHelper dbHelper = null;
+    private static ImageListLoader mImageListLoader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +55,7 @@ public class DailyActivity extends FragmentActivity {
         setContentView(R.layout.activity_daily);
 
         dbHelper = new DailyInfoDbHelper(this);
+        mImageListLoader = new ImageListLoader(this);
 
         if (savedInstanceState == null) {
             placeholderFragment = new PlaceholderFragment();
@@ -67,9 +68,8 @@ public class DailyActivity extends FragmentActivity {
     @Override
     public void onBackPressed() {
         Intent intent = new Intent();
-        PictureGroup pictureGroup = placeholderFragment.getPictureGroup();
-        intent.putExtra(DailyActivity.INTENT_EXTRA_NAME, (Parcelable)placeholderFragment.getPictureGroup());
-        setResult(PictureGroupActivity.RESULT_CODE_FROM_DAILY_ACTIVITY, intent);
+        intent.putExtra(INTENT_EXTRA_NAME, (Parcelable)placeholderFragment.getPictureGroup());
+        setResult(RESULT_CODE_FROM_ONE_DAY_ACTIVITY, intent);
         super.onBackPressed();
     }
 
@@ -88,13 +88,21 @@ public class DailyActivity extends FragmentActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
             case R.id.action_sticker:
-                openStickerView();
+                toggelStickerView();
                 return true;
             case R.id.action_edit:
                 openEditView();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void toggelStickerView() {
+        if (this.placeholderFragment.getStickerViewPager().getVisibility() == View.VISIBLE) {
+            closeStickerView();
+        } else {
+            openStickerView();
         }
     }
 
@@ -110,7 +118,16 @@ public class DailyActivity extends FragmentActivity {
         Intent intent = new Intent(this, WriteActivity.class);
         intent.putExtra(getString(R.string.EXTRA_DAILY_GROUP_ID), this.placeholderFragment.getPictureGroup().getId());
         intent.putExtra(getString(R.string.EXTRA_DAIRY_TEXT), this.placeholderFragment.getPictureGroup().getDairyText());
-        startActivity(intent);
+        startActivityForResult(intent, REQUEST_CODE_TO_WRITE_ACTIVITY);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CODE_TO_WRITE_ACTIVITY && resultCode == WriteActivity.RESULT_CODE_FROM_WRITE_ACTIVITY) {
+            String dairyText = data.getStringExtra(WriteActivity.INTENT_EXTRA_UPDATE_DAIRY_TEXT_NAME);
+            placeholderFragment.getPictureGroup().setDairyText(dairyText);
+            placeholderFragment.getDiaryTextView().setText(dairyText);
+        }
     }
 
     /**
@@ -118,13 +135,14 @@ public class DailyActivity extends FragmentActivity {
      */
     public class PlaceholderFragment extends ListFragment {
 
-        private PictureGroup pictureGroup;
-        private View headerView;
-        private List<PictureGroup> pictureGroupList;
+        private PictureGroup mPictureGroup;
+        private View mHeaderView;
 
-        private ViewPager stickerViewPager = null;
-        private StickerCollectionPagerAdapter stickerCollectionPagerAdapter = null;
-        private ImageView stickerImage = null;
+        private ViewPager mStickerViewPager = null;
+        private StickerCollectionPagerAdapter mStickerCollectionPagerAdapter = null;
+
+        private ImageView mStickerImage = null;
+        private TextView mDairyTextView = null;
 
         public PlaceholderFragment() {
         }
@@ -135,24 +153,19 @@ public class DailyActivity extends FragmentActivity {
             View rootView = inflater.inflate(R.layout.fragment_daily, container, false);
 
             Parcelable parcelable = getActivity().getIntent().getParcelableExtra( getString(R.string.extra_daily_data_array) );
-            pictureGroup = (PictureGroup)parcelable;
+            mPictureGroup = (PictureGroup)parcelable;
 
-            pictureGroup.loadFromDb(getActivity());
+            mHeaderView = inflater.inflate(R.layout.daily_header, null, false);
 
-            pictureGroupList = new ArrayList<PictureGroup>(pictureGroup.size());
-            for (Picture picture : pictureGroup) {
-                PictureGroup pictureInfoList = new PictureGroup(1);
-                pictureInfoList.add(picture);
-                pictureGroupList.add(pictureInfoList);
-            }
+            mStickerImage = (ImageView) mHeaderView.findViewById(R.id.sticker_image);
+            mStickerImage.setImageResource(mPictureGroup.getSticker());
 
-            headerView = inflater.inflate(R.layout.diary, null, false);
-            stickerImage = (ImageView)headerView.findViewById(R.id.sticker_image);
+            mDairyTextView = (TextView) mHeaderView.findViewById(R.id.dairy_text);
+            mDairyTextView.setText(mPictureGroup.getDairyText());
 
-            stickerViewPager = (ViewPager)rootView.findViewById(R.id.sticker_view_pager);
-            stickerCollectionPagerAdapter = new StickerCollectionPagerAdapter( ((FragmentActivity)getActivity()).getSupportFragmentManager() );
-            stickerViewPager.setAdapter(stickerCollectionPagerAdapter);
-
+            mStickerViewPager = (ViewPager)rootView.findViewById(R.id.sticker_view_pager);
+            mStickerCollectionPagerAdapter = new StickerCollectionPagerAdapter( ((FragmentActivity)getActivity()).getSupportFragmentManager() );
+            mStickerViewPager.setAdapter(mStickerCollectionPagerAdapter);
 
             return rootView;
         }
@@ -161,21 +174,17 @@ public class DailyActivity extends FragmentActivity {
         public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
 
-            if (headerView != null) {
-                getListView().addHeaderView(headerView);
+            if (mHeaderView != null) {
+                getListView().addHeaderView(mHeaderView);
             }
 
-            DailyAdapter listAdapter = new DailyAdapter(getActivity(), pictureGroupList);
+            OneDayAdapter listAdapter = new OneDayAdapter(getActivity(), mPictureGroup, mImageListLoader);
             setListAdapter(listAdapter);
         }
 
         @Override
         public void onStart() {
             super.onStart();
-
-            if (pictureGroup != null) {
-                pictureGroup.loadFromDb(getActivity());
-            }
         }
 
         @Override
@@ -185,15 +194,19 @@ public class DailyActivity extends FragmentActivity {
         }
 
         public PictureGroup getPictureGroup() {
-            return pictureGroup;
+            return mPictureGroup;
         }
 
         public ViewPager getStickerViewPager() {
-            return stickerViewPager;
+            return mStickerViewPager;
         }
 
         public ImageView getStickerImage() {
-            return stickerImage;
+            return mStickerImage;
+        }
+
+        public TextView getDiaryTextView() {
+            return mDairyTextView;
         }
     }
 

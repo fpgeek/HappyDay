@@ -19,11 +19,6 @@
             android:layout_height="100dp"
             android:visibility="gone"/>
 
-        <!--<TextView-->
-            <!--android:id="@+id/dairy_text"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_width="fill_parent"/>-->
-
         <ListView
             android:id="@android:id/list"
             android:layout_height="match_parent"

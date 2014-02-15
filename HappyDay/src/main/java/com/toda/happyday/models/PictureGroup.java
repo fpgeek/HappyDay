@@ -300,87 +300,87 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
         parcel.readList(this, getClass().getClassLoader());
     }
 
-    public void loadFromDb(Activity activity) {
-        new GetDairyTask(activity, this).execute(this.id);
+//    public void loadFromDb(Activity activity) {
+//        new GetDairyTask(activity, this).execute(this.id);
+//
+////        Location location = new Location("");
+////        location.setLatitude(this.get(0).getLatitude());
+////        location.setLongitude(this.get(0).getLongitude());
+////        new GetAddressTask(activity, this).execute(location);
+//    }
 
-//        Location location = new Location("");
-//        location.setLatitude(this.get(0).getLatitude());
-//        location.setLongitude(this.get(0).getLongitude());
-//        new GetAddressTask(activity, this).execute(location);
-    }
-
-    private class GetDairyTask extends AsyncTask<Long, Void, PictureGroup> {
-
-        private Activity activity;
-        private DailyInfoDbHelper dbHelper = null;
-        private PictureGroup pictureGroup;
-
-        public GetDairyTask(Activity activity, PictureGroup pictureGroup) {
-            this.activity = activity;
-            this.dbHelper = new DailyInfoDbHelper(activity);
-            this.pictureGroup = pictureGroup;
-        }
-
-        @Override
-        protected PictureGroup doInBackground(Long... longs) {
-            long rowId = longs[0];
-            SQLiteDatabase db = dbHelper.getReadableDatabase();
-
-            String[] projection = {
-                    DailyInfo.DailyEntry._ID,
-                    DailyInfo.DailyEntry.COLUMN_NAME_DIARY_TEXT,
-                    DailyInfo.DailyEntry.COLUMN_NAME_STICKER,
-                    DailyInfo.DailyEntry.COLUMN_NAME_FAVORITE
-            };
-
-            String selection = DailyInfo.DailyEntry._ID + " = ?";
-            String[] selectionArgs = { String.valueOf(rowId) };
-
-            String sortOrder = DailyInfo.DailyEntry.COLUMN_NAME_FAVORITE + " DESC";
-
-            assert db != null;
-            Cursor cursor = db.query(
-                    DailyInfo.DailyEntry.TABLE_NAME,
-                    projection,
-                    selection,
-                    selectionArgs,
-                    null,
-                    null,
-                    sortOrder
-            );
-
-            while(cursor.moveToNext()) {
-                String diaryText = cursor.getString(cursor.getColumnIndex(DailyInfo.DailyEntry.COLUMN_NAME_DIARY_TEXT));
-                pictureGroup.setDairyText(diaryText);
-                int sticker = cursor.getInt(cursor.getColumnIndex(DailyInfo.DailyEntry.COLUMN_NAME_STICKER));
-                pictureGroup.setSticker(sticker);
-                int favorite = cursor.getInt(cursor.getColumnIndex(DailyInfo.DailyEntry.COLUMN_NAME_FAVORITE));
-                pictureGroup.setFavorite(favorite == 1);
-            }
-            cursor.close();
-            return pictureGroup;
-        }
-
-        @Override
-        protected void onPostExecute(PictureGroup pictureGroup) {
-            super.onPostExecute(pictureGroup);
-
-            if (pictureGroup != null) {
-                TextView diaryTextView = (TextView)this.activity.findViewById(R.id.dairy_text);
-                if (pictureGroup.getDairyText() != null) {
-                    diaryTextView.setText(pictureGroup.getDairyText());
-                }
-
-                TextView dateTextView = (TextView)this.activity.findViewById(R.id.date_text);
-                dateTextView.setText(pictureGroup.get(0).getDateText());
-
-                ImageView stickerImage = (ImageView)this.activity.findViewById(R.id.sticker_image);
-                if (pictureGroup.hasSticker()) {
-                    stickerImage.setImageResource(pictureGroup.getSticker());
-                }
-            }
-        }
-    }
+//    private class GetDairyTask extends AsyncTask<Long, Void, PictureGroup> {
+//
+//        private Activity activity;
+//        private DailyInfoDbHelper dbHelper = null;
+//        private PictureGroup pictureGroup;
+//
+//        public GetDairyTask(Activity activity, PictureGroup pictureGroup) {
+//            this.activity = activity;
+//            this.dbHelper = new DailyInfoDbHelper(activity);
+//            this.pictureGroup = pictureGroup;
+//        }
+//
+//        @Override
+//        protected PictureGroup doInBackground(Long... longs) {
+//            long rowId = longs[0];
+//            SQLiteDatabase db = dbHelper.getReadableDatabase();
+//
+//            String[] projection = {
+//                    DailyInfo.DailyEntry._ID,
+//                    DailyInfo.DailyEntry.COLUMN_NAME_DIARY_TEXT,
+//                    DailyInfo.DailyEntry.COLUMN_NAME_STICKER,
+//                    DailyInfo.DailyEntry.COLUMN_NAME_FAVORITE
+//            };
+//
+//            String selection = DailyInfo.DailyEntry._ID + " = ?";
+//            String[] selectionArgs = { String.valueOf(rowId) };
+//
+//            String sortOrder = DailyInfo.DailyEntry.COLUMN_NAME_FAVORITE + " DESC";
+//
+//            assert db != null;
+//            Cursor cursor = db.query(
+//                    DailyInfo.DailyEntry.TABLE_NAME,
+//                    projection,
+//                    selection,
+//                    selectionArgs,
+//                    null,
+//                    null,
+//                    sortOrder
+//            );
+//
+//            while(cursor.moveToNext()) {
+//                String diaryText = cursor.getString(cursor.getColumnIndex(DailyInfo.DailyEntry.COLUMN_NAME_DIARY_TEXT));
+//                pictureGroup.setDairyText(diaryText);
+//                int sticker = cursor.getInt(cursor.getColumnIndex(DailyInfo.DailyEntry.COLUMN_NAME_STICKER));
+//                pictureGroup.setSticker(sticker);
+//                int favorite = cursor.getInt(cursor.getColumnIndex(DailyInfo.DailyEntry.COLUMN_NAME_FAVORITE));
+//                pictureGroup.setFavorite(favorite == 1);
+//            }
+//            cursor.close();
+//            return pictureGroup;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(PictureGroup pictureGroup) {
+//            super.onPostExecute(pictureGroup);
+//
+//            if (pictureGroup != null) {
+//                TextView diaryTextView = (TextView)this.activity.findViewById(R.id.dairy_text);
+//                if (pictureGroup.getDairyText() != null) {
+//                    diaryTextView.setText(pictureGroup.getDairyText());
+//                }
+//
+//                TextView dateTextView = (TextView)this.activity.findViewById(R.id.date_text);
+//                dateTextView.setText(pictureGroup.get(0).getDateText());
+//
+//                ImageView stickerImage = (ImageView)this.activity.findViewById(R.id.sticker_image);
+//                if (pictureGroup.hasSticker()) {
+//                    stickerImage.setImageResource(pictureGroup.getSticker());
+//                }
+//            }
+//        }
+//    }
 
 //    protected class GetAddressTask extends AsyncTask<Location, Void, Address> {
 //
