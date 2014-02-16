@@ -3,6 +3,7 @@ package com.toda.happyday.presenters;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 
 import com.toda.happyday.async.AsyncPostExecute;
 import com.toda.happyday.views.PictureGroupActivity;
@@ -12,6 +13,8 @@ import com.toda.happyday.models.PictureGroup;
 import com.toda.happyday.models.db.DailyInfoDbHelper;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +39,14 @@ public class PictureGroupPresenter {
         public void onPostExecute(List<Picture> pictureList) {
             mPictureList = pictureList;
             PictureGroup.all(mDbHelper, mOnPostGetPictureGroupList);
+        }
+    };
+
+    private static class PictureDateCompare implements Comparator<PictureGroup> {
+
+        @Override
+        public int compare(PictureGroup pictureGroup, PictureGroup pictureGroup2) {
+            return pictureGroup2.getMainPicture().getDate().compareTo(pictureGroup.getMainPicture().getDate());
         }
     };
 
@@ -70,6 +81,7 @@ public class PictureGroupPresenter {
                 }
             }
 
+            Collections.sort(pictureGroupList, new PictureDateCompare());
             mPictureGroupActivity.setPictureGroups(pictureGroupList);
         }
     };
@@ -97,27 +109,31 @@ public class PictureGroupPresenter {
     }
 
     private List<List<Picture>> pictureListToListGroupByTime(List<Picture> pictureList) {
-
-        List<Picture> pictureGroup = new ArrayList<Picture>();
         List<List<Picture>> pictureGroupList = new ArrayList<List<Picture>>();
+        List<Picture> pictureGroup = new ArrayList<Picture>();
 
-        long prevTakenDateValue = 0;
-        for(Picture picture : pictureList) {
-
-            final long takenTime = picture.getDate().getTime();
-            if (prevTakenDateValue == 0) {
-                prevTakenDateValue = takenTime;
+        long prevPictTakenTime = 0;
+        for (Picture picture : pictureList) {
+            if (prevPictTakenTime == 0) {
+                pictureGroup.add(picture);
+                prevPictTakenTime = picture.getDate().getTime();
+                continue;
             }
 
-            if ((prevTakenDateValue - takenTime) <= TAKEN_DATE_DIFF_MS) {
-                prevTakenDateValue = takenTime;
+            final long takenTime = picture.getDate().getTime();
+            if ( (takenTime - prevPictTakenTime) <= TAKEN_DATE_DIFF_MS ) {
                 pictureGroup.add(picture);
             } else {
                 pictureGroupList.add(pictureGroup);
-                pictureGroup = new PictureGroup();
+                pictureGroup = new ArrayList<Picture>();
                 pictureGroup.add(picture);
-                prevTakenDateValue = 0;
             }
+
+            prevPictTakenTime = takenTime;
+        }
+
+        if (!pictureGroupList.contains(pictureGroup)) {
+            pictureGroupList.add(pictureGroup);
         }
         return pictureGroupList;
     }

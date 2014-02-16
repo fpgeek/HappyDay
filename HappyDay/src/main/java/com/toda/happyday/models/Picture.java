@@ -42,7 +42,7 @@ public class Picture implements Parcelable {
             MediaStore.Images.Media.ORIENTATION,
             MediaStore.Images.Media.IS_PRIVATE
     };
-    private final static String DB_DATE_ORDER_DESC = MediaStore.Images.Media.DATE_TAKEN + " DESC";
+    private final static String DB_DATE_ORDER = MediaStore.Images.Media.DATE_TAKEN + " ASC";
 
     public Picture() {
     }
@@ -110,11 +110,11 @@ public class Picture implements Parcelable {
 
     private static Cursor getPictureCursor(ContentResolver contentResolver, final long id) {
         String[] selectionArgs = {String.valueOf(id)};
-        return getCursor(contentResolver, MediaStore.Images.Media._ID + " = ?", selectionArgs, DB_DATE_ORDER_DESC);
+        return getCursor(contentResolver, MediaStore.Images.Media._ID + " = ?", selectionArgs, DB_DATE_ORDER);
     }
 
     private static Cursor getAllPictureCursor(ContentResolver contentResolver) {
-        return getCursor(contentResolver, null, null, DB_DATE_ORDER_DESC);
+        return getCursor(contentResolver, null, null, DB_DATE_ORDER);
     }
 
     private static Cursor getCursor(ContentResolver contentResolver, final String selection, final String[] selectionArgs, final String sortOrder) {
