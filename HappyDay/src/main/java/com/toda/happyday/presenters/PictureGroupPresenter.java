@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import com.toda.happyday.async.AsyncPostExecute;
+import com.toda.happyday.async.CreateThumbnailBitmapTask;
 import com.toda.happyday.views.PictureGroupActivity;
 import com.toda.happyday.R;
 import com.toda.happyday.models.Picture;
@@ -73,12 +74,7 @@ public class PictureGroupPresenter {
 
             for (PictureGroup pictureGroup : pictureGroupList) {
                 pictureGroup.selectMainPicture();
-
-                for (Picture picture : pictureGroup) {
-                    BitmapFactory.Options bitmapOptions = getBitmapOptions(picture.getImagePath());
-                    picture.setWidth(bitmapOptions.outWidth);
-                    picture.setHeight(bitmapOptions.outHeight);
-                }
+                new CreateThumbnailBitmapTask(mPictureGroupActivity.getContentResolver(), pictureGroup.getMainPicture()).execute();
             }
 
             Collections.sort(pictureGroupList, new PictureDateCompare());

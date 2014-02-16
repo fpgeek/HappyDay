@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.toda.happyday.models.Picture;
+import com.toda.happyday.utils.BitmapUtils;
 
 import java.lang.ref.WeakReference;
 
@@ -114,7 +115,7 @@ public class ImageListLoader {
             final ImageView imageView = imageViewReference.get();
             if (imageView != null) {
                 if (shouldDecodeBitmap()) {
-                    Bitmap bitmap = decodeSampledBitmapFromFile(imagePath, imageView.getLayoutParams().width, imageView.getLayoutParams().height);
+                    Bitmap bitmap = BitmapUtils.decodeSampledBitmapFromFile(imagePath, imageView.getLayoutParams().width / 2, imageView.getLayoutParams().height / 2);
                     addBitmapToMemoryCache(imagePath, bitmap);
                     return bitmap;
                 }
@@ -148,55 +149,10 @@ public class ImageListLoader {
         }
     }
 
-    private static Bitmap decodeSampledBitmapFromFile(String imagePath, int reqWidth, int reqHeight) {
-
-        // First decode with inJustDecodeBounds=true to check dimensions
-        final BitmapFactory.Options options = getBitmapOptions(imagePath);
-
-        // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
-
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeFile(imagePath, options);
-    }
-
     private void addBitmapToMemoryCache(String key, Bitmap bitmap) {
         if (getBitmapFromMemCache(key) == null) {
             memoryCache.put(key, bitmap);
         }
-    }
-
-    private static BitmapFactory.Options getBitmapOptions( String fileName ){
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(fileName, options);
-        return options;
-    }
-
-    private static int calculateInSampleSize(
-            BitmapFactory.Options options, int reqWidth, int reqHeight) {
-        // Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        int inSampleSize = 1;
-
-        if (height > reqHeight || width > reqWidth) {
-
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-
-            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) > reqHeight
-                    && (halfWidth / inSampleSize) > reqWidth) {
-                inSampleSize *= 2;
-            }
-        }
-
-        inSampleSize *= 2; // 메모리 부족 현상 해결을 위해 의도적으로 반으로 더 나눔
-
-        return inSampleSize;
     }
 
     static class AsyncDrawable extends BitmapDrawable {

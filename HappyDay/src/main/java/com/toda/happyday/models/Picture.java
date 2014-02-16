@@ -3,13 +3,16 @@ package com.toda.happyday.models;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 
+import com.google.android.gms.internal.bi;
 import com.toda.happyday.async.AsyncPostExecute;
+import com.toda.happyday.utils.BitmapUtils;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -27,7 +30,7 @@ public class Picture implements Parcelable {
     private double longitude;
     private double latitude;
     private String imagePath;
-    private Bitmap thumbnailBitmap; // 다른 Activity에 전달할 때는 의도적으로 제외했음.
+    private Bitmap thumbnailBitmap = null; // 다른 Activity에 전달할 때는 의도적으로 제외했음.
     private int width;
     private int height;
 
@@ -101,17 +104,17 @@ public class Picture implements Parcelable {
         }
     }
 
-    public static Picture get(ContentResolver contentResolver, final long id) {
-        Cursor pictureCursor = getPictureCursor(contentResolver, id);
-        if (pictureCursor == null) { return null; }
+//    public static Picture get(ContentResolver contentResolver, final long id) {
+//        Cursor pictureCursor = getPictureCursor(contentResolver, id);
+//        if (pictureCursor == null) { return null; }
+//
+//        return createPictureInfo(pictureCursor, contentResolver);
+//    }
 
-        return createPictureInfo(pictureCursor, contentResolver);
-    }
-
-    private static Cursor getPictureCursor(ContentResolver contentResolver, final long id) {
-        String[] selectionArgs = {String.valueOf(id)};
-        return getCursor(contentResolver, MediaStore.Images.Media._ID + " = ?", selectionArgs, DB_DATE_ORDER);
-    }
+//    private static Cursor getPictureCursor(ContentResolver contentResolver, final long id) {
+//        String[] selectionArgs = {String.valueOf(id)};
+//        return getCursor(contentResolver, MediaStore.Images.Media._ID + " = ?", selectionArgs, DB_DATE_ORDER);
+//    }
 
     private static Cursor getAllPictureCursor(ContentResolver contentResolver) {
         return getCursor(contentResolver, null, null, DB_DATE_ORDER);
@@ -143,8 +146,14 @@ public class Picture implements Parcelable {
         final double latitudeValue = pictureCursor.getDouble(pictureCursor.getColumnIndex(MediaStore.Images.Media.LATITUDE));
         picture.setLatitude(latitudeValue);
 
-        Bitmap thumbnailBitmap = MediaStore.Images.Thumbnails.getThumbnail(contentResolver, picture.getId(), MediaStore.Images.Thumbnails.MICRO_KIND, null);
-        picture.setThumbnailBitmap(thumbnailBitmap);
+        BitmapFactory.Options bitmapOptions = BitmapUtils.getBitmapOptions(picture.getImagePath());
+        picture.setWidth(bitmapOptions.outWidth);
+        picture.setHeight(bitmapOptions.outHeight);
+
+//        BitmapFactory.Options options = new BitmapFactory.Options();
+//        options.inSampleSize = 4;
+//        Bitmap thumbnailBitmap = MediaStore.Images.Thumbnails.getThumbnail(contentResolver, picture.getId(), MediaStore.Images.Thumbnails.MINI_KIND, options);
+//        picture.setThumbnailBitmap(thumbnailBitmap);
 
         return picture;
     }
@@ -239,6 +248,7 @@ public class Picture implements Parcelable {
         parcel.writeString(imagePath);
         parcel.writeInt(width);
         parcel.writeInt(height);
+//        parcel.writeParcelable(thumbnailBitmap, i);
     }
 
     private void readFromParcel(Parcel parcel) {
@@ -248,6 +258,7 @@ public class Picture implements Parcelable {
         this.imagePath = parcel.readString();
         this.width = parcel.readInt();
         this.height = parcel.readInt();
+//        this.thumbnailBitmap = parcel.readParcelable(getClass().getClassLoader());
     }
 
 

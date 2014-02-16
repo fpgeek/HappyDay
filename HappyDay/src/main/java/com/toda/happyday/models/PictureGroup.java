@@ -1,31 +1,18 @@
 package com.toda.happyday.models;
 
-import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.toda.happyday.R;
 import com.toda.happyday.async.AsyncPostExecute;
 import com.toda.happyday.models.db.DailyInfo;
 import com.toda.happyday.models.db.DailyInfoDbHelper;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Random;
 
 /**

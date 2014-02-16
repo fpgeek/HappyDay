@@ -75,7 +75,11 @@ public class OneDayAdapter extends ArrayAdapter<Picture> {
         viewHolder.pictureImageView.getLayoutParams().height = imageHeight;
 
         ListView listView = (ListView)parent;
-        mImageListLoader.loadBitmap(picture.getImagePath(), mLoadingBitmap, viewHolder.pictureImageView, listView, position);
+        if (picture.getThumbnailBitmap() == null) {
+            mImageListLoader.loadBitmap(picture.getImagePath(), mLoadingBitmap, viewHolder.pictureImageView, listView, position);
+        } else {
+            mImageListLoader.loadBitmap(picture.getImagePath(), picture.getThumbnailBitmap(), viewHolder.pictureImageView, listView, position);
+        }
 
         return convertView;
     }

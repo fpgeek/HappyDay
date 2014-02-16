@@ -26,6 +26,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.toda.happyday.R;
+import com.toda.happyday.async.CreateThumbnailBitmapTask;
+import com.toda.happyday.models.Picture;
 import com.toda.happyday.models.db.DailyInfo;
 import com.toda.happyday.models.db.DailyInfoDbHelper;
 import com.toda.happyday.models.PictureGroup;
@@ -177,6 +179,12 @@ public class OneDayActivity extends FragmentActivity {
             if (mHeaderView != null) {
                 getListView().addHeaderView(mHeaderView);
             }
+
+//            for (Picture picture : mPictureGroup) {
+//                if (picture.getThumbnailBitmap() == null) {
+//                    new CreateThumbnailBitmapTask(getActivity().getContentResolver(), picture).execute();
+//                }
+//            }
 
             OneDayAdapter listAdapter = new OneDayAdapter(getActivity(), mPictureGroup, mImageListLoader);
             setListAdapter(listAdapter);
