@@ -3,6 +3,7 @@ package com.toda.happyday.async;
 import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
 
@@ -26,6 +27,12 @@ public class CreateThumbnailBitmapTask extends AsyncTask<Void, Void, Bitmap> {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 4;
         Bitmap thumbnailBitmap = MediaStore.Images.Thumbnails.getThumbnail(mContentResolver, mPicture.getId(), MediaStore.Images.Thumbnails.MINI_KIND, options);
+
+        if (mPicture.getDegrees() != 0) {
+            Matrix mx = new Matrix();
+            mx.postRotate(mPicture.getDegrees());
+            return Bitmap.createBitmap(thumbnailBitmap, 0, 0, thumbnailBitmap.getWidth(), thumbnailBitmap.getHeight(), mx ,true);
+        }
         return thumbnailBitmap;
     }
 

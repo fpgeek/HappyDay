@@ -41,6 +41,7 @@ public class PictureGroupActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.picture_group_list);
 
         mImageListLoader = new ImageListLoader(this);
@@ -220,6 +221,9 @@ public class PictureGroupActivity extends Activity {
         mRightAdapter = new PictureGroupAdapter(this, rightPictureGroups, mImageListLoader);
         mListViewLeft.setAdapter(mLeftAdapter);
         mListViewRight.setAdapter(mRightAdapter);
+
+        ImageView mainImageView = (ImageView) findViewById(R.id.main_image);
+        mainImageView.setVisibility(View.INVISIBLE);
     }
 
     private int getMainPicturesHeight(List<PictureGroup> pictureGroupList) {

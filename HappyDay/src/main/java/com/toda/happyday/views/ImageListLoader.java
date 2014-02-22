@@ -3,7 +3,6 @@ package com.toda.happyday.views;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -45,19 +44,19 @@ public class ImageListLoader {
         };
     }
 
-    public void loadBitmap(String imagePath, Bitmap thumbnailImage, ImageView imageView, ListView listView, int position) {
-        boolean isCancelWork = cancelPotentialWork(imagePath, imageView);
+    public void loadBitmap(Picture picture, Bitmap thumbnailImage, ImageView imageView, ListView listView, int position) {
+        boolean isCancelWork = cancelPotentialWork(picture.getImagePath(), imageView);
 
-        final Bitmap bitmap = getBitmapFromMemCache(imagePath);
+        final Bitmap bitmap = getBitmapFromMemCache(picture.getImagePath());
         if (bitmap != null) {
             imageView.setImageBitmap(bitmap);
         } else {
             if (isCancelWork) {
-                final BitmapWorkerTask task = new BitmapWorkerTask(imageView, listView, position);
+                final BitmapWorkerTask task = new BitmapWorkerTask(picture, imageView, listView, position);
                 final AsyncDrawable asyncDrawable =
                         new AsyncDrawable(mContext.getResources(), thumbnailImage, task);
                 imageView.setImageDrawable(asyncDrawable);
-                task.execute(imagePath);
+                task.execute(picture.getImagePath());
             }
         }
     }
@@ -97,12 +96,14 @@ public class ImageListLoader {
 
     class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
         private final WeakReference<ImageView> imageViewReference;
-        public String imagePath;
+        private Picture mPicture;
+        private String imagePath;
         private ListView listView;
         private int position;
 
-        public BitmapWorkerTask(ImageView imageView, ListView listView, int position) {
+        public BitmapWorkerTask(Picture picture, ImageView imageView, ListView listView, int position) {
             // Use a WeakReference to ensure the ImageView can be garbage collected
+            this.mPicture = picture;
             this.imageViewReference = new WeakReference<ImageView>(imageView);
             this.listView = listView;
             this.position = position;
@@ -115,7 +116,7 @@ public class ImageListLoader {
             final ImageView imageView = imageViewReference.get();
             if (imageView != null) {
                 if (shouldDecodeBitmap()) {
-                    Bitmap bitmap = BitmapUtils.decodeSampledBitmapFromFile(imagePath, imageView.getLayoutParams().width / 2, imageView.getLayoutParams().height / 2);
+                    Bitmap bitmap = BitmapUtils.decodeSampledBitmapFromFile(imagePath, mPicture.getDegrees(), imageView.getLayoutParams().width / 2, imageView.getLayoutParams().height / 2);
                     addBitmapToMemoryCache(imagePath, bitmap);
                     return bitmap;
                 }

@@ -72,12 +72,13 @@ public class PictureGroupPresenter {
                 }
             }
 
+            Collections.sort(pictureGroupList, new PictureDateCompare());
+
             for (PictureGroup pictureGroup : pictureGroupList) {
                 pictureGroup.selectMainPicture();
                 new CreateThumbnailBitmapTask(mPictureGroupActivity.getContentResolver(), pictureGroup.getMainPicture()).execute();
             }
 
-            Collections.sort(pictureGroupList, new PictureDateCompare());
             mPictureGroupActivity.setPictureGroups(pictureGroupList);
         }
     };

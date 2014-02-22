@@ -9,6 +9,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.LruCache;
 import android.view.View;
 import android.view.ViewGroup;
@@ -82,18 +83,24 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
         viewHolder.stickerImageView.setImageResource(pictureGroup.getSticker());
         viewHolder.dairyTextView.setText(pictureGroup.getDairyText());
 
-        final int imageWidth = windowWidth / 2;
-        final double imageWidthRate = ((double) windowWidth / 2.0) / (double)picture.getWidth();
-        final int imageHeight = (int)(imageWidthRate * (double)picture.getHeight());
+        final int imageViewWidth = windowWidth / 2;
 
-        viewHolder.pictureImageView.getLayoutParams().width = imageWidth;
-        viewHolder.pictureImageView.getLayoutParams().height = imageHeight;
+        {
+            double ratio = 1;
+            if (picture.getDegrees() == 0) {
+                ratio = (double)picture.getHeight() / (double)picture.getWidth();
+            } else if (picture.getDegrees() == 90) {
+                ratio = (double)picture.getWidth() / (double)picture.getHeight();
+            }
+            viewHolder.pictureImageView.getLayoutParams().width = imageViewWidth;
+            viewHolder.pictureImageView.getLayoutParams().height = (int)(ratio * (double)imageViewWidth);
+        }
 
         ListView listView = (ListView)parent;
         if (picture.getThumbnailBitmap() == null) {
-            mImageListLoader.loadBitmap(picture.getImagePath(), mLoadingBitmap, viewHolder.pictureImageView, listView, position);
+            mImageListLoader.loadBitmap(picture, mLoadingBitmap, viewHolder.pictureImageView, listView, position);
         } else {
-            mImageListLoader.loadBitmap(picture.getImagePath(), picture.getThumbnailBitmap(), viewHolder.pictureImageView, listView, position);
+            mImageListLoader.loadBitmap(picture, picture.getThumbnailBitmap(), viewHolder.pictureImageView, listView, position);
         }
 
 

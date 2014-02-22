@@ -26,8 +26,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.toda.happyday.R;
-import com.toda.happyday.async.CreateThumbnailBitmapTask;
-import com.toda.happyday.models.Picture;
 import com.toda.happyday.models.db.DailyInfo;
 import com.toda.happyday.models.db.DailyInfoDbHelper;
 import com.toda.happyday.models.PictureGroup;

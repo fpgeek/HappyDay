@@ -9,8 +9,8 @@ import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.MediaStore;
+import android.util.Log;
 
-import com.google.android.gms.internal.bi;
 import com.toda.happyday.async.AsyncPostExecute;
 import com.toda.happyday.utils.BitmapUtils;
 
@@ -33,6 +33,7 @@ public class Picture implements Parcelable {
     private Bitmap thumbnailBitmap = null; // 다른 Activity에 전달할 때는 의도적으로 제외했음.
     private int width;
     private int height;
+    private int mDegrees;
 
     private final static Uri DB_IMAGE_URI = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
     private final static String[] DB_PROJECTION = {
@@ -146,14 +147,14 @@ public class Picture implements Parcelable {
         final double latitudeValue = pictureCursor.getDouble(pictureCursor.getColumnIndex(MediaStore.Images.Media.LATITUDE));
         picture.setLatitude(latitudeValue);
 
+        final int orientation = pictureCursor.getInt(pictureCursor.getColumnIndex(MediaStore.Images.Media.ORIENTATION));
+        picture.setDegrees(orientation);
+
         BitmapFactory.Options bitmapOptions = BitmapUtils.getBitmapOptions(picture.getImagePath());
+        Log.i("GOODOI", "picture.setWidth : " + bitmapOptions.outWidth);
+        Log.i("GOODOI", "picture.setHeight : " + bitmapOptions.outHeight);
         picture.setWidth(bitmapOptions.outWidth);
         picture.setHeight(bitmapOptions.outHeight);
-
-//        BitmapFactory.Options options = new BitmapFactory.Options();
-//        options.inSampleSize = 4;
-//        Bitmap thumbnailBitmap = MediaStore.Images.Thumbnails.getThumbnail(contentResolver, picture.getId(), MediaStore.Images.Thumbnails.MINI_KIND, options);
-//        picture.setThumbnailBitmap(thumbnailBitmap);
 
         return picture;
     }
@@ -224,6 +225,14 @@ public class Picture implements Parcelable {
         this.thumbnailBitmap = thumbnailBitmap;
     }
 
+    public int getDegrees() {
+        return mDegrees;
+    }
+
+    public void setDegrees(int degrees) {
+        this.mDegrees = degrees;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -248,6 +257,7 @@ public class Picture implements Parcelable {
         parcel.writeString(imagePath);
         parcel.writeInt(width);
         parcel.writeInt(height);
+        parcel.writeInt(mDegrees);
 //        parcel.writeParcelable(thumbnailBitmap, i);
     }
 
@@ -258,6 +268,7 @@ public class Picture implements Parcelable {
         this.imagePath = parcel.readString();
         this.width = parcel.readInt();
         this.height = parcel.readInt();
+        this.mDegrees = parcel.readInt();
 //        this.thumbnailBitmap = parcel.readParcelable(getClass().getClassLoader());
     }
 

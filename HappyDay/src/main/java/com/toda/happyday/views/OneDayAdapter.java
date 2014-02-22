@@ -67,18 +67,29 @@ public class OneDayAdapter extends ArrayAdapter<Picture> {
 
         Picture picture = mPictureGroup.get(position);
 
-        final int imageWidth = mWindowWidth;
-        final double imageWidthRate = (double) mWindowWidth / (double)picture.getWidth();
-        final int imageHeight = (int)(imageWidthRate * (double)picture.getHeight());
+        final int imageViewWidth = mWindowWidth;
+//        final double imageWidthRate = (double) mWindowWidth / (double)picture.getWidth();
+//        final int imageHeight = (int)(imageWidthRate * (double)picture.getHeight());
 
-        viewHolder.pictureImageView.getLayoutParams().width = imageWidth;
-        viewHolder.pictureImageView.getLayoutParams().height = imageHeight;
+        {
+            double ratio = 1;
+            if (picture.getDegrees() == 0) {
+                ratio = (double)picture.getHeight() / (double)picture.getWidth();
+            } else if (picture.getDegrees() == 90) {
+                ratio = (double)picture.getWidth() / (double)picture.getHeight();
+            }
+            viewHolder.pictureImageView.getLayoutParams().width = imageViewWidth;
+            viewHolder.pictureImageView.getLayoutParams().height = (int)(ratio * (double)imageViewWidth);
+        }
+
+//        viewHolder.pictureImageView.getLayoutParams().width = imageViewWidth;
+//        viewHolder.pictureImageView.getLayoutParams().height = imageHeight;
 
         ListView listView = (ListView)parent;
         if (picture.getThumbnailBitmap() == null) {
-            mImageListLoader.loadBitmap(picture.getImagePath(), mLoadingBitmap, viewHolder.pictureImageView, listView, position);
+            mImageListLoader.loadBitmap(picture, mLoadingBitmap, viewHolder.pictureImageView, listView, position);
         } else {
-            mImageListLoader.loadBitmap(picture.getImagePath(), picture.getThumbnailBitmap(), viewHolder.pictureImageView, listView, position);
+            mImageListLoader.loadBitmap(picture, picture.getThumbnailBitmap(), viewHolder.pictureImageView, listView, position);
         }
 
         return convertView;
