@@ -6,7 +6,7 @@
     android:layout_marginRight="@dimen/activity_horizontal_margin"
     android:layout_marginTop="@dimen/activity_vertical_margin"
     android:layout_marginBottom="@dimen/activity_vertical_margin"
-    android:background="@android:color/white"
+    android:background="@color/app_background"
     tools:context=".DailyActivity$PlaceholderFragment">
 
     <LinearLayout
@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="100dp"
             android:visibility="gone"
-            android:background="@color/app_background"/>
+            android:background="@android:color/white"/>
 
         <ListView
             android:id="@android:id/list"
@@ -29,7 +29,9 @@
             android:smoothScrollbar="true"
             android:scrollbars="none"
             android:divider="@android:color/transparent"
-            android:dividerHeight="15sp">
+            android:dividerHeight="15sp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp">
         </ListView>
 
     </LinearLayout>

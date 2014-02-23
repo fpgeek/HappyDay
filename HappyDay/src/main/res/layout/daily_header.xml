@@ -1,47 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal" android:layout_width="match_parent"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingTop="10dp"
-    android:layout_marginTop="@dimen/dairy_vertical_margin"
-    android:layout_marginBottom="@dimen/dairy_vertical_margin"
+    android:layout_marginTop="0dp"
+    android:layout_marginBottom="0dp"
     android:layout_marginLeft="@dimen/dairy_horizontal_margin"
     android:layout_marginRight="@dimen/dairy_horizontal_margin"
-    android:background="@android:color/white">
+    android:background="@color/app_background">
 
     <ImageView
         android:id="@+id/sticker_image"
-        android:layout_height="wrap_content"
+        android:layout_height="30dp"
         android:layout_width="30dp"
-        android:layout_marginRight="15dp"
-        android:layout_marginLeft="15dp"
+        android:paddingRight="4dp"
+        android:visibility="gone"
      />
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_height="match_parent"
-        android:layout_width="match_parent">
+        android:layout_width="match_parent"
+        android:layout_toRightOf="@id/sticker_image">
 
         <TextView
             android:id="@+id/dairy_text"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            android:textSize="15sp"
-            android:layout_marginBottom="12dp"/>
+            android:textSize="17sp"
+            android:layout_marginBottom="5dp"
+            />
 
         <TextView
             android:id="@+id/date_text"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            android:textSize="12sp"
-            android:layout_marginBottom="6dp"/>
+            android:textSize="14sp"
+            android:layout_marginBottom="2dp"
+            />
 
         <TextView
             android:id="@+id/location_text"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            android:textSize="12sp"/>
+            android:textSize="14sp"
+            />
 
     </LinearLayout>
-</LinearLayout>
+</RelativeLayout>

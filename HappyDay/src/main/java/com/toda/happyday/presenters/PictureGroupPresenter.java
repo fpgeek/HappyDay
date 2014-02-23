@@ -72,23 +72,19 @@ public class PictureGroupPresenter {
                 }
             }
 
+            for (PictureGroup pictureGroup : pictureGroupList) {
+                pictureGroup.selectMainPicture();
+            }
+
             Collections.sort(pictureGroupList, new PictureDateCompare());
 
             for (PictureGroup pictureGroup : pictureGroupList) {
-                pictureGroup.selectMainPicture();
                 new CreateThumbnailBitmapTask(mPictureGroupActivity.getContentResolver(), pictureGroup.getMainPicture()).execute();
             }
 
             mPictureGroupActivity.setPictureGroups(pictureGroupList);
         }
     };
-
-    private static BitmapFactory.Options getBitmapOptions( String fileName ){
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(fileName, options);
-        return options;
-    }
 
 
     public void loadPictureGroups() {

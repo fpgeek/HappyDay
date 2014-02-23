@@ -160,6 +160,7 @@ public class OneDayActivity extends FragmentActivity {
 
         private ImageView mStickerImage = null;
         private TextView mDairyTextView = null;
+        private TextView mDateTextView = null;
 
         public PlaceholderFragment() {
         }
@@ -172,13 +173,20 @@ public class OneDayActivity extends FragmentActivity {
             Parcelable parcelable = getActivity().getIntent().getParcelableExtra( getString(R.string.extra_daily_data_array) );
             mPictureGroup = (PictureGroup)parcelable;
 
+
             mHeaderView = inflater.inflate(R.layout.daily_header, null, false);
 
             mStickerImage = (ImageView) mHeaderView.findViewById(R.id.sticker_image);
-            mStickerImage.setImageResource(mPictureGroup.getSticker());
+            if (mPictureGroup.hasSticker()) {
+                mStickerImage.setImageResource(mPictureGroup.getSticker());
+                mStickerImage.setVisibility(View.VISIBLE);
+            }
 
             mDairyTextView = (TextView) mHeaderView.findViewById(R.id.dairy_text);
             mDairyTextView.setText(mPictureGroup.getDairyText());
+
+            mDateTextView = (TextView) mHeaderView.findViewById(R.id.date_text);
+            mDateTextView.setText(mPictureGroup.getMainPicture().getDateText());
 
             mStickerViewPager = (ViewPager)rootView.findViewById(R.id.sticker_view_pager);
             mStickerCollectionPagerAdapter = new StickerCollectionPagerAdapter( ((FragmentActivity)getActivity()).getSupportFragmentManager() );
@@ -313,6 +321,7 @@ public class OneDayActivity extends FragmentActivity {
             if (updateSuccess) {
                 placeholderFragment.getPictureGroup().setSticker(stickerImageId);
                 placeholderFragment.getStickerImage().setImageResource(stickerImageId);
+                placeholderFragment.getStickerImage().setVisibility(View.VISIBLE);
                 closeStickerView();
             }
         }
@@ -365,6 +374,7 @@ public class OneDayActivity extends FragmentActivity {
             }
 
             imageView.setImageResource( STICKER_IMAGE_IDS[position + (index * STICKER_COUNT_PER_SCREEN)] );
+            imageView.setVisibility(View.VISIBLE);
             return imageView;
         }
     }

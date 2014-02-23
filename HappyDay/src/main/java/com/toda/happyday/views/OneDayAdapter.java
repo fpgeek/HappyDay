@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
@@ -59,6 +58,7 @@ public class OneDayAdapter extends ArrayAdapter<Picture> {
 
             viewHolder = new ViewHolder();
             viewHolder.pictureImageView = (ImageView)convertView.findViewById(R.id.picture);
+            viewHolder.timeTextView = (TextView)convertView.findViewById(R.id.time_text);
 
             convertView.setTag(viewHolder);
         } else {
@@ -67,9 +67,9 @@ public class OneDayAdapter extends ArrayAdapter<Picture> {
 
         Picture picture = mPictureGroup.get(position);
 
+        viewHolder.timeTextView.setText(picture.getTimeText());
+
         final int imageViewWidth = mWindowWidth;
-//        final double imageWidthRate = (double) mWindowWidth / (double)picture.getWidth();
-//        final int imageHeight = (int)(imageWidthRate * (double)picture.getHeight());
 
         {
             double ratio = 1;
@@ -81,9 +81,6 @@ public class OneDayAdapter extends ArrayAdapter<Picture> {
             viewHolder.pictureImageView.getLayoutParams().width = imageViewWidth;
             viewHolder.pictureImageView.getLayoutParams().height = (int)(ratio * (double)imageViewWidth);
         }
-
-//        viewHolder.pictureImageView.getLayoutParams().width = imageViewWidth;
-//        viewHolder.pictureImageView.getLayoutParams().height = imageHeight;
 
         ListView listView = (ListView)parent;
         if (picture.getThumbnailBitmap() == null) {
@@ -97,5 +94,6 @@ public class OneDayAdapter extends ArrayAdapter<Picture> {
 
     private static class ViewHolder {
         public ImageView pictureImageView;
+        public TextView timeTextView;
     }
 }
