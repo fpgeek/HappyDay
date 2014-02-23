@@ -82,6 +82,12 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
         viewHolder.dayTextView.setText(picture.getDayText());
         viewHolder.stickerImageView.setImageResource(pictureGroup.getSticker());
         viewHolder.dairyTextView.setText(pictureGroup.getDairyText());
+        if (pictureGroup.getDairyText().equals("")) {
+            viewHolder.dairyTextView.setVisibility(View.GONE);
+        } else {
+            viewHolder.dairyTextView.setVisibility(View.VISIBLE);
+        }
+
 
         final int imageViewWidth = windowWidth / 2;
 

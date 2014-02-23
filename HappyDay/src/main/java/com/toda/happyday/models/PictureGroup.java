@@ -21,7 +21,7 @@ import java.util.Random;
 public class PictureGroup extends ArrayList<Picture> implements Parcelable {
 
     private long id;
-    private String dairyText = null;
+    private String dairyText = "";
     private int sticker;
     private boolean isFavorite;
     private String locationText = null;

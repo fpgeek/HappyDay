@@ -25,9 +25,8 @@
 
         <activity
             android:name="com.toda.happyday.views.PictureGroupActivity"
-            android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar" >
+            android:theme="@style/HappyDayMainViewTheme" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -36,13 +35,12 @@
         </activity>
         <activity
             android:name="com.toda.happyday.views.OneDayActivity"
-            android:label="@string/title_activity_daily"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="com.toda.happyday.views.WriteActivity"
-            android:label="@string/title_activity_write"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:label="@string/write">
         </activity>
     </application>
 

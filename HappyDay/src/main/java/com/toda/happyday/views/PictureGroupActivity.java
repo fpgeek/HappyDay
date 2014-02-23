@@ -1,5 +1,6 @@
 package com.toda.happyday.views;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.android.gms.internal.ac;
 import com.toda.happyday.R;
 import com.toda.happyday.models.PictureGroup;
 import com.toda.happyday.presenters.PictureGroupPresenter;
@@ -41,6 +43,10 @@ public class PictureGroupActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (getActionBar() != null) {
+            getActionBar().hide();
+        }
 
         setContentView(R.layout.picture_group_list);
 
@@ -184,9 +190,12 @@ public class PictureGroupActivity extends Activity {
             stickerImageView.setImageResource(sticker);
 
             final String dairyText = pictureGroup.getDairyText();
-            if (dairyText != null) {
-                TextView diaryTextView = (TextView)mShouldUpdateView.findViewById(R.id.dairy_text);
-                diaryTextView.setText(dairyText);
+            TextView diaryTextView = (TextView)mShouldUpdateView.findViewById(R.id.dairy_text);
+            diaryTextView.setText(dairyText);
+            if (dairyText.equals("")) {
+                diaryTextView.setVisibility(View.GONE);
+            } else {
+                diaryTextView.setVisibility(View.VISIBLE);
             }
         }
     }
@@ -224,6 +233,8 @@ public class PictureGroupActivity extends Activity {
 
         ImageView mainImageView = (ImageView) findViewById(R.id.main_image);
         mainImageView.setVisibility(View.INVISIBLE);
+
+        getActionBar().show();
     }
 
     private int getMainPicturesHeight(List<PictureGroup> pictureGroupList) {

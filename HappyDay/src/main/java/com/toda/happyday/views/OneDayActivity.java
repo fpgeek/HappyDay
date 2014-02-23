@@ -1,5 +1,6 @@
 package com.toda.happyday.views;
 
+import android.app.ActionBar;
 import android.app.ListFragment;
 import android.content.ContentValues;
 import android.content.Context;
@@ -23,8 +24,10 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.internal.ac;
 import com.toda.happyday.R;
 import com.toda.happyday.models.db.DailyInfo;
 import com.toda.happyday.models.db.DailyInfoDbHelper;
@@ -52,6 +55,9 @@ public class OneDayActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        initActionBar();
+
         setContentView(R.layout.activity_daily);
 
         dbHelper = new DailyInfoDbHelper(this);
@@ -62,6 +68,17 @@ public class OneDayActivity extends FragmentActivity {
             getFragmentManager().beginTransaction()
                     .add(R.id.container, placeholderFragment)
                     .commit();
+        }
+    }
+
+    private void initActionBar() {
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayShowCustomEnabled(true);
+            actionBar.setDisplayShowTitleEnabled(false);
+
+            RelativeLayout relativeLayout = (RelativeLayout)getLayoutInflater().inflate(R.layout.important_in_actionbar, null, false);
+            actionBar.setCustomView(relativeLayout);
         }
     }
 
@@ -177,12 +194,6 @@ public class OneDayActivity extends FragmentActivity {
             if (mHeaderView != null) {
                 getListView().addHeaderView(mHeaderView);
             }
-
-//            for (Picture picture : mPictureGroup) {
-//                if (picture.getThumbnailBitmap() == null) {
-//                    new CreateThumbnailBitmapTask(getActivity().getContentResolver(), picture).execute();
-//                }
-//            }
 
             OneDayAdapter listAdapter = new OneDayAdapter(getActivity(), mPictureGroup, mImageListLoader);
             setListAdapter(listAdapter);

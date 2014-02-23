@@ -3,17 +3,19 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingTop="10dp"
     android:layout_marginTop="@dimen/dairy_vertical_margin"
     android:layout_marginBottom="@dimen/dairy_vertical_margin"
     android:layout_marginLeft="@dimen/dairy_horizontal_margin"
-    android:layout_marginRight="@dimen/dairy_horizontal_margin">
+    android:layout_marginRight="@dimen/dairy_horizontal_margin"
+    android:background="@android:color/white">
 
     <ImageView
         android:id="@+id/sticker_image"
         android:layout_height="match_parent"
         android:layout_width="30dp"
-        android:layout_marginRight="@dimen/dairy_horizontal_margin"
-        android:layout_marginLeft="@dimen/dairy_horizontal_margin"
+        android:layout_marginRight="15dp"
+        android:layout_marginLeft="15dp"
      />
 
     <LinearLayout

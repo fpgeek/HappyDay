@@ -3,7 +3,35 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="android:Theme.Holo.Light">
-        <!-- Customize your theme here. -->
+        <item name="android:actionBarStyle">@style/HappyDayTheme.ActionBar</item>
+        <item name="android:actionMenuTextColor">@android:color/white</item>
+        <item name="android:actionMenuTextAppearance">@style/HappyDayMenuTextAppearance</item>
+    </style>
+
+    <style name="HappyDayTheme.ActionBar" parent="android:Widget.Holo.ActionBar">
+        <item name="android:background">@color/actionbar_background</item>
+        <item name="android:icon">@android:color/transparent</item>
+        <item name="android:titleTextStyle">@style/HappyDayTheme.ActionBar.TitleTextStyle</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <style name="HappyDayMainViewTheme" parent="AppTheme">
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="android:actionBarStyle">@style/HappyDayTheme.MainViewActionBar</item>
+    </style>
+
+    <style name="HappyDayTheme.MainViewActionBar" parent="HappyDayTheme.ActionBar">
+        <item name="android:alpha">0.7</item>
+    </style>
+
+    <style name="HappyDayTheme.ActionBar.TitleTextStyle" parent="android:TextAppearance">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">30sp</item>
+    </style>
+
+    <style name="HappyDayMenuTextAppearance" parent="android:TextAppearance.Holo.Widget.ActionBar.Title">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">20sp</item>
     </style>
 
     <style name="FullscreenTheme" parent="android:Theme.NoTitleBar">
