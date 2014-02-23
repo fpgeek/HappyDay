@@ -5,13 +5,13 @@
     android:orientation="vertical"
     android:background="@color/picture_item_background">
     <FrameLayout
-        android:layout_height="wrap_content"
+        android:layout_height="fill_parent"
         android:layout_width="fill_parent">
 
         <ImageView android:id="@+id/picture"
             android:layout_height="fill_parent"
             android:layout_width="fill_parent"
-            android:scaleType="fitXY" />
+            android:scaleType="fitXY"/>
 
         <!--<TextView android:id="@+id/time_text"-->
             <!--android:layout_height="wrap_content"-->
@@ -22,28 +22,38 @@
             <!--android:textSize="12sp"-->
             <!--android:textColor="@android:color/white"/>-->
 
-        <LinearLayout
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:orientation="vertical"
+        <RelativeLayout
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
             android:layout_gravity="bottom|right"
+            android:layout_marginRight="10dip"
+            android:layout_marginBottom="10dip"
             >
 
             <ImageView android:id="@+id/sticker_thumb"
-                android:layout_height="wrap_content"
-                android:layout_width="40dp"
-                android:layout_gravity="bottom|center"
-                android:layout_marginRight="10dp"/>
+                android:layout_height="35dp"
+                android:layout_width="35dp"
+                android:layout_alignParentRight="true"
+                />
 
             <TextView android:id="@+id/day_text"
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
-                android:layout_gravity="bottom|right"
-                android:layout_marginRight="10dip"
-                android:layout_marginBottom="10dip"
-                android:textSize="50sp"
+                android:textSize="55sp"
+                android:textColor="@android:color/white"
+                android:layout_alignParentRight="true"
+                android:layout_below="@id/sticker_thumb"
+                />
+
+            <TextView android:id="@+id/month_text"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:textSize="30sp"
+                android:layout_toLeftOf="@id/day_text"
+                android:layout_alignBaseline="@id/day_text"
                 android:textColor="@android:color/white"/>
-        </LinearLayout>
+
+        </RelativeLayout>
 
 
 
@@ -58,11 +68,32 @@
 
     </FrameLayout>
 
-    <TextView android:id="@+id/dairy_text"
-        android:layout_height="wrap_content"
-        android:layout_width="fill_parent"
-        android:textSize="15sp"
-        />
+    <RelativeLayout
+        android:layout_height="fill_parent"
+        android:layout_width="fill_parent">
+
+        <TextView android:id="@+id/dairy_text"
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:textSize="18sp"
+            />
+
+        <TextView android:id="@+id/location_text"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_below="@id/dairy_text"
+            android:layout_alignParentLeft="true"
+            android:textSize="14sp"
+            />
+
+        <TextView android:id="@+id/date_text"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_below="@id/dairy_text"
+            android:layout_alignParentRight="true"
+            android:textSize="14sp" />
+
+    </RelativeLayout>
 
     <TextView
         android:layout_height="wrap_content"

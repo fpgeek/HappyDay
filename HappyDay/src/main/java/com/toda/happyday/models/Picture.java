@@ -48,6 +48,10 @@ public class Picture implements Parcelable {
     };
     private final static String DB_DATE_ORDER = MediaStore.Images.Media.DATE_TAKEN + " ASC";
 
+    private final static String MONTH_ENG_LIST[] = {
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    };
+
     public Picture() {
     }
 
@@ -73,6 +77,12 @@ public class Picture implements Parcelable {
 
     public int getHeight() {
         return height;
+    }
+
+    public String getMonthText() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return MONTH_ENG_LIST[calendar.get(Calendar.MONTH)];
     }
 
     private static class GetAllPicturesTask extends AsyncTask<Void, Void, List<Picture>> {

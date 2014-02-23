@@ -66,9 +66,11 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
 
             viewHolder = new ViewHolder();
             viewHolder.dayTextView = (TextView)convertView.findViewById(R.id.day_text);
+            viewHolder.monthTextView = (TextView)convertView.findViewById(R.id.month_text);
             viewHolder.pictureImageView = (ImageView)convertView.findViewById(R.id.picture);
             viewHolder.stickerImageView = (ImageView)convertView.findViewById(R.id.sticker_thumb);
             viewHolder.dairyTextView = (TextView)convertView.findViewById(R.id.dairy_text);
+            viewHolder.dateTextView = (TextView)convertView.findViewById(R.id.date_text);
             viewHolder.position = position;
 
             convertView.setTag(viewHolder);
@@ -80,6 +82,7 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
         Picture picture = pictureGroup.getMainPicture();
 
         viewHolder.dayTextView.setText(picture.getDayText());
+        viewHolder.monthTextView.setText(picture.getMonthText());
         viewHolder.stickerImageView.setImageResource(pictureGroup.getSticker());
         viewHolder.dairyTextView.setText(pictureGroup.getDairyText());
         if (pictureGroup.getDairyText().equals("")) {
@@ -87,6 +90,8 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
         } else {
             viewHolder.dairyTextView.setVisibility(View.VISIBLE);
         }
+        viewHolder.dateTextView.setText(picture.getDateText());
+
 
 
         final int imageViewWidth = windowWidth / 2;
@@ -115,9 +120,11 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
 
     private static class ViewHolder {
         public TextView dayTextView;
+        public TextView monthTextView;
         public ImageView pictureImageView;
         public ImageView stickerImageView;
         public TextView dairyTextView;
         public int position;
+        public TextView dateTextView;
     }
 }
