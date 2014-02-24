@@ -161,8 +161,6 @@ public class Picture implements Parcelable {
         picture.setDegrees(orientation);
 
         BitmapFactory.Options bitmapOptions = BitmapUtils.getBitmapOptions(picture.getImagePath());
-        Log.i("GOODOI", "picture.setWidth : " + bitmapOptions.outWidth);
-        Log.i("GOODOI", "picture.setHeight : " + bitmapOptions.outHeight);
         picture.setWidth(bitmapOptions.outWidth);
         picture.setHeight(bitmapOptions.outHeight);
 

@@ -17,6 +17,7 @@ import com.google.android.gms.internal.ac;
 import com.toda.happyday.R;
 import com.toda.happyday.models.PictureGroup;
 import com.toda.happyday.presenters.PictureGroupPresenter;
+import com.toda.happyday.utils.TextViewUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -191,12 +192,7 @@ public class PictureGroupActivity extends Activity {
 
             final String dairyText = pictureGroup.getDairyText();
             TextView diaryTextView = (TextView)mShouldUpdateView.findViewById(R.id.dairy_text);
-            diaryTextView.setText(dairyText);
-            if (dairyText.equals("")) {
-                diaryTextView.setVisibility(View.GONE);
-            } else {
-                diaryTextView.setVisibility(View.VISIBLE);
-            }
+            TextViewUtil.setText(diaryTextView, dairyText);
         }
     }
 

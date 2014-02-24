@@ -32,6 +32,7 @@ import com.toda.happyday.R;
 import com.toda.happyday.models.db.DailyInfo;
 import com.toda.happyday.models.db.DailyInfoDbHelper;
 import com.toda.happyday.models.PictureGroup;
+import com.toda.happyday.utils.TextViewUtil;
 
 public class OneDayActivity extends FragmentActivity {
 
@@ -55,8 +56,6 @@ public class OneDayActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        initActionBar();
 
         setContentView(R.layout.activity_daily);
 
@@ -143,7 +142,7 @@ public class OneDayActivity extends FragmentActivity {
         if (requestCode == REQUEST_CODE_TO_WRITE_ACTIVITY && resultCode == WriteActivity.RESULT_CODE_FROM_WRITE_ACTIVITY) {
             String dairyText = data.getStringExtra(WriteActivity.INTENT_EXTRA_UPDATE_DAIRY_TEXT_NAME);
             placeholderFragment.getPictureGroup().setDairyText(dairyText);
-            placeholderFragment.getDiaryTextView().setText(dairyText);
+            TextViewUtil.setText(placeholderFragment.getDiaryTextView(), dairyText);
         }
     }
 
@@ -160,7 +159,7 @@ public class OneDayActivity extends FragmentActivity {
 
         private ImageView mStickerImage = null;
         private TextView mDairyTextView = null;
-        private TextView mDateTextView = null;
+//        private TextView mDateTextView = null;
 
         public PlaceholderFragment() {
         }
@@ -173,6 +172,10 @@ public class OneDayActivity extends FragmentActivity {
             Parcelable parcelable = getActivity().getIntent().getParcelableExtra( getString(R.string.extra_daily_data_array) );
             mPictureGroup = (PictureGroup)parcelable;
 
+            ActionBar actionBar = getActionBar();
+            if (actionBar != null) {
+                actionBar.setTitle(mPictureGroup.getMainPicture().getDateText());
+            }
 
             mHeaderView = inflater.inflate(R.layout.daily_header, null, false);
 
@@ -183,10 +186,10 @@ public class OneDayActivity extends FragmentActivity {
             }
 
             mDairyTextView = (TextView) mHeaderView.findViewById(R.id.dairy_text);
-            mDairyTextView.setText(mPictureGroup.getDairyText());
+            TextViewUtil.setText(mDairyTextView, mPictureGroup.getDairyText());
 
-            mDateTextView = (TextView) mHeaderView.findViewById(R.id.date_text);
-            mDateTextView.setText(mPictureGroup.getMainPicture().getDateText());
+//            mDateTextView = (TextView) mHeaderView.findViewById(R.id.date_text);
+//            mDateTextView.setText(mPictureGroup.getMainPicture().getDateText());
 
             mStickerViewPager = (ViewPager)rootView.findViewById(R.id.sticker_view_pager);
             mStickerCollectionPagerAdapter = new StickerCollectionPagerAdapter( ((FragmentActivity)getActivity()).getSupportFragmentManager() );

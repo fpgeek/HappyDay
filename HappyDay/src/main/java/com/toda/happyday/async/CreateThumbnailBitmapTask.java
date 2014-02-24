@@ -7,6 +7,7 @@ import android.graphics.Matrix;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
 
+import com.google.android.gms.internal.bi;
 import com.toda.happyday.models.Picture;
 
 /**
@@ -16,10 +17,12 @@ public class CreateThumbnailBitmapTask extends AsyncTask<Void, Void, Bitmap> {
 
     private ContentResolver mContentResolver;
     private Picture mPicture;
+    private AsyncPostExecute<Bitmap> mAsyncPostExecute = null;
 
-    public CreateThumbnailBitmapTask(ContentResolver contentResolver, Picture picture) {
+    public CreateThumbnailBitmapTask(ContentResolver contentResolver, Picture picture, AsyncPostExecute<Bitmap> asyncPostExecute) {
         mContentResolver = contentResolver;
         mPicture = picture;
+        mAsyncPostExecute = asyncPostExecute;
     }
 
     @Override
@@ -39,5 +42,8 @@ public class CreateThumbnailBitmapTask extends AsyncTask<Void, Void, Bitmap> {
     @Override
     protected void onPostExecute(Bitmap bitmap) {
         mPicture.setThumbnailBitmap(bitmap);
+        if (mAsyncPostExecute != null) {
+            mAsyncPostExecute.onPostExecute(bitmap);
+        }
     }
 }

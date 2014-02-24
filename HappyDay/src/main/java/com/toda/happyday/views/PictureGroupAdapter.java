@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.toda.happyday.R;
 import com.toda.happyday.models.PictureGroup;
 import com.toda.happyday.models.Picture;
+import com.toda.happyday.utils.TextViewUtil;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -81,18 +82,11 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
         PictureGroup pictureGroup = mPictureGroups.get(position);
         Picture picture = pictureGroup.getMainPicture();
 
-        viewHolder.dayTextView.setText(picture.getDayText());
-        viewHolder.monthTextView.setText(picture.getMonthText());
+        TextViewUtil.setText(viewHolder.dayTextView, picture.getDayText());
+        TextViewUtil.setText(viewHolder.monthTextView, picture.getMonthText());
         viewHolder.stickerImageView.setImageResource(pictureGroup.getSticker());
-        viewHolder.dairyTextView.setText(pictureGroup.getDairyText());
-        if (pictureGroup.getDairyText().equals("")) {
-            viewHolder.dairyTextView.setVisibility(View.GONE);
-        } else {
-            viewHolder.dairyTextView.setVisibility(View.VISIBLE);
-        }
-        viewHolder.dateTextView.setText(picture.getDateText());
-
-
+        TextViewUtil.setText(viewHolder.dairyTextView, pictureGroup.getDairyText());
+        TextViewUtil.setText(viewHolder.dateTextView, picture.getDateText());
 
         final int imageViewWidth = windowWidth / 2;
 

@@ -16,6 +16,7 @@ import android.widget.TextView;
 import com.toda.happyday.R;
 import com.toda.happyday.models.PictureGroup;
 import com.toda.happyday.models.Picture;
+import com.toda.happyday.utils.TextViewUtil;
 
 
 /**
@@ -67,7 +68,7 @@ public class OneDayAdapter extends ArrayAdapter<Picture> {
 
         Picture picture = mPictureGroup.get(position);
 
-        viewHolder.timeTextView.setText(picture.getTimeText());
+        TextViewUtil.setText(viewHolder.timeTextView, picture.getTimeText());
 
         final int imageViewWidth = mWindowWidth;
 
