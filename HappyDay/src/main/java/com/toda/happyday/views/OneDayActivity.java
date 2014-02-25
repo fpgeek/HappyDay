@@ -29,6 +29,7 @@ import android.widget.TextView;
 
 import com.google.android.gms.internal.ac;
 import com.toda.happyday.R;
+import com.toda.happyday.async.OneDayBitmapWorkerTask;
 import com.toda.happyday.models.db.DailyInfo;
 import com.toda.happyday.models.db.DailyInfoDbHelper;
 import com.toda.happyday.models.PictureGroup;

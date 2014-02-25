@@ -9,7 +9,7 @@
         android:layout_height="fill_parent"
         android:layout_width="fill_parent"
         android:scaleType="fitXY"
-        android:src="@drawable/sticker_1"/>
+        android:background="@color/app_background"/>
 
     <TextView android:id="@+id/time_text"
         android:layout_height="fill_parent"

@@ -14,6 +14,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.toda.happyday.R;
+import com.toda.happyday.async.BitmapWorkerTask;
+import com.toda.happyday.async.OneDayBitmapWorkerTask;
 import com.toda.happyday.models.PictureGroup;
 import com.toda.happyday.models.Picture;
 import com.toda.happyday.utils.TextViewUtil;
@@ -30,6 +32,7 @@ public class OneDayAdapter extends ArrayAdapter<Picture> {
     private int mWindowWidth = 0;
     private int mWindowHeight = 0;
 
+//    private static Bitmap mLoadingBitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
     private static Bitmap mLoadingBitmap;
     private static ImageListLoader mImageListLoader;
 
@@ -84,10 +87,13 @@ public class OneDayAdapter extends ArrayAdapter<Picture> {
         }
 
         ListView listView = (ListView)parent;
+
+        BitmapWorkerTask bitmapWorkerTask = new OneDayBitmapWorkerTask(picture, viewHolder.pictureImageView, listView, position);
+
         if (picture.getThumbnailBitmap() == null) {
-            mImageListLoader.loadBitmap(picture, mLoadingBitmap, viewHolder.pictureImageView, listView, position);
+            mImageListLoader.loadBitmap(picture, mLoadingBitmap, viewHolder.pictureImageView, bitmapWorkerTask);
         } else {
-            mImageListLoader.loadBitmap(picture, picture.getThumbnailBitmap(), viewHolder.pictureImageView, listView, position);
+            mImageListLoader.loadBitmap(picture, picture.getThumbnailBitmap(), viewHolder.pictureImageView, bitmapWorkerTask);
         }
 
         return convertView;

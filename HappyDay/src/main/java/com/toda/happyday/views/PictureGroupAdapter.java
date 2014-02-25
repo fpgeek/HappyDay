@@ -20,6 +20,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.toda.happyday.R;
+import com.toda.happyday.async.BitmapWorkerTask;
+import com.toda.happyday.async.PictureGroupBitmapWorkerTask;
 import com.toda.happyday.models.PictureGroup;
 import com.toda.happyday.models.Picture;
 import com.toda.happyday.utils.TextViewUtil;
@@ -38,7 +40,8 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
     private int windowWidth = 0;
     private int windowHeight = 0;
 
-    private static Bitmap mLoadingBitmap;
+//    private static Bitmap mLoadingBitmap;
+    private static Bitmap mLoadingBitmap = null;
     private static ImageListLoader mImageListLoader;
 
     public PictureGroupAdapter(Activity activity, List<PictureGroup> pictureGroups, ImageListLoader imageListLoader) {
@@ -53,7 +56,7 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
         windowWidth = metrics.widthPixels;
         windowHeight = metrics.heightPixels;
 
-        mLoadingBitmap = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.img_loading);
+//        mLoadingBitmap = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.img_loading);
 
         mImageListLoader = imageListLoader;
     }
@@ -102,10 +105,13 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
         }
 
         ListView listView = (ListView)parent;
+
+        BitmapWorkerTask bitmapWorkerTask = new PictureGroupBitmapWorkerTask(mActivity.getContentResolver(), picture, viewHolder.pictureImageView, listView, position);
+
         if (picture.getThumbnailBitmap() == null) {
-            mImageListLoader.loadBitmap(picture, mLoadingBitmap, viewHolder.pictureImageView, listView, position);
+            mImageListLoader.loadBitmap(picture, mLoadingBitmap, viewHolder.pictureImageView, bitmapWorkerTask);
         } else {
-            mImageListLoader.loadBitmap(picture, picture.getThumbnailBitmap(), viewHolder.pictureImageView, listView, position);
+            mImageListLoader.loadBitmap(picture, picture.getThumbnailBitmap(), viewHolder.pictureImageView, bitmapWorkerTask);
         }
 
 

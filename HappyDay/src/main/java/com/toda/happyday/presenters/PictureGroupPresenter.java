@@ -3,11 +3,8 @@ package com.toda.happyday.presenters;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.Log;
 
 import com.toda.happyday.async.AsyncPostExecute;
-import com.toda.happyday.async.CreateThumbnailBitmapTask;
 import com.toda.happyday.views.PictureGroupActivity;
 import com.toda.happyday.R;
 import com.toda.happyday.models.Picture;
@@ -95,18 +92,18 @@ public class PictureGroupPresenter {
 
             Collections.sort(pictureGroupList, new PictureDateCompare());
 
-            int pictureCount=0;
-            for (PictureGroup pictureGroup : pictureGroupList) {
-                if (pictureCount == 6) {
-                    AppStartExecute appStartExecuteHandler = new AppStartExecute(mPictureGroupActivity, pictureGroupList);
-                    new CreateThumbnailBitmapTask(mPictureGroupActivity.getContentResolver(), pictureGroup.getMainPicture(), appStartExecuteHandler).execute();
-                } else {
-                    new CreateThumbnailBitmapTask(mPictureGroupActivity.getContentResolver(), pictureGroup.getMainPicture(), null).execute();
-                }
-                ++pictureCount;
-            }
+//            int pictureCount=0;
+//            for (PictureGroup pictureGroup : pictureGroupList) {
+//                if (pictureCount == 6) {
+//                    AppStartExecute appStartExecuteHandler = new AppStartExecute(mPictureGroupActivity, pictureGroupList);
+//                    new CreateThumbnailBitmapTask(mPictureGroupActivity.getContentResolver(), pictureGroup.getMainPicture(), appStartExecuteHandler).execute();
+//                } else {
+//                    new CreateThumbnailBitmapTask(mPictureGroupActivity.getContentResolver(), pictureGroup.getMainPicture(), null).execute();
+//                }
+//                ++pictureCount;
+//            }
 
-//            mPictureGroupActivity.setPictureGroups(pictureGroupList);
+            mPictureGroupActivity.setPictureGroups(pictureGroupList);
         }
     };
 
