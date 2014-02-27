@@ -1,20 +1,23 @@
 package com.toda.happyday.views;
 
-import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.google.android.gms.internal.ac;
 import com.toda.happyday.R;
+import com.toda.happyday.models.Picture;
 import com.toda.happyday.models.PictureGroup;
 import com.toda.happyday.presenters.PictureGroupPresenter;
 import com.toda.happyday.utils.TextViewUtil;
@@ -27,7 +30,8 @@ public class PictureGroupActivity extends Activity {
     private final static int REQUEST_CODE_TO_ONE_DAY_ACTIVITY = 1;
     private PictureGroupPresenter mPictureGroupPresenter;
 
-    private List<PictureGroup> mPictureGroups;
+    private List<PictureGroup> mLeftPictureGroups;
+    private List<PictureGroup> mRightPictureGroups;
     private ListView onTouchListView;
     private ListView mListViewLeft;
     private ListView mListViewRight;
@@ -147,11 +151,7 @@ public class PictureGroupActivity extends Activity {
 
             if (adapterView == onTouchListView) {
 
-                final int clickedPictureGroupIndex = getClickPictureGroupIndex(adapterView, i);
-                if (clickedPictureGroupIndex >= mPictureGroups.size()) { return; }
-
-                PictureGroup pictureGroup = mPictureGroups.get(clickedPictureGroupIndex);
-
+                PictureGroup pictureGroup = getClickedPictureGroup(adapterView, i);
                 if (pictureGroup != null) {
                     mShouldUpdatePictureGroup = pictureGroup;
                     mShouldUpdateView = view;
@@ -163,13 +163,17 @@ public class PictureGroupActivity extends Activity {
         }
     };
 
-    private int getClickPictureGroupIndex(AdapterView<?> adapterView, int i) {
+    private PictureGroup getClickedPictureGroup(AdapterView<?> adapterView, int index) {
         if (adapterView == mListViewLeft) {
-            return i*2;
+            if (index < mLeftPictureGroups.size()) {
+                return mLeftPictureGroups.get(index);
+            }
         } else if (adapterView == mListViewRight) {
-            return i*2 + 1;
+            if (index < mRightPictureGroups.size()) {
+                return mRightPictureGroups.get(index);
+            }
         }
-        return 0;
+        return null;
     }
 
     @Override
@@ -192,38 +196,46 @@ public class PictureGroupActivity extends Activity {
 
             final String dairyText = pictureGroup.getDairyText();
             TextView diaryTextView = (TextView)mShouldUpdateView.findViewById(R.id.dairy_text);
+            diaryTextView.setText(dairyText);
             TextViewUtil.setText(diaryTextView, dairyText);
+            if (dairyText.equals("")) {
+                diaryTextView.setVisibility(View.GONE);
+            } else {
+                diaryTextView.setVisibility(View.VISIBLE);
+            }
         }
     }
 
     public void setPictureGroups(List<PictureGroup> pictureGroups) {
-        mPictureGroups = pictureGroups;
 
-        List<PictureGroup> leftPictureGroups = new ArrayList<PictureGroup>(pictureGroups.size() / 2);
-        List<PictureGroup> rightPictureGroups = new ArrayList<PictureGroup>(pictureGroups.size() / 2);
-        dividePictureGroups(pictureGroups, leftPictureGroups, rightPictureGroups);
+        mLeftPictureGroups = new ArrayList<PictureGroup>(pictureGroups.size() / 2);
+        mRightPictureGroups = new ArrayList<PictureGroup>(pictureGroups.size() / 2);
+        dividePictureGroups(pictureGroups, mLeftPictureGroups, mRightPictureGroups);
 
-        final int leftPictureGroupsHeight = getMainPicturesHeight(leftPictureGroups);
-        final int rightPictureGroupsHeight = getMainPicturesHeight(rightPictureGroups);
+        final double leftPictureGroupsHeight = getRelativeMainPicturesHeight(mLeftPictureGroups);
+        final double rightPictureGroupsHeight = getRelativeMainPicturesHeight(mRightPictureGroups);
 
-        int heightDiff = leftPictureGroupsHeight - rightPictureGroupsHeight;
+        double heightDiff = leftPictureGroupsHeight - rightPictureGroupsHeight;
         View footerView = getLayoutInflater().inflate(R.layout.picture_last, null);
         ImageView imageView = (ImageView)footerView.findViewById(R.id.picture_last_image);
 
+        DisplayMetrics metrics = new DisplayMetrics();
+        ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(metrics);
+
         if (heightDiff > 0) {
-            mLeftViewsHeights = new int[leftPictureGroups.size()];
-            mRightViewsHeights = new int[rightPictureGroups.size() + 1];
-            imageView.getLayoutParams().height = heightDiff;
+            mLeftViewsHeights = new int[mLeftPictureGroups.size()];
+            mRightViewsHeights = new int[mRightPictureGroups.size() + 1];
+            imageView.getLayoutParams().height = (int)(heightDiff * metrics.widthPixels);
             mListViewRight.addFooterView(footerView);
         } else if (heightDiff < 0) {
-            mLeftViewsHeights = new int[leftPictureGroups.size() + 1];
-            mRightViewsHeights = new int[rightPictureGroups.size()];
-            imageView.getLayoutParams().height = -heightDiff;
+            mLeftViewsHeights = new int[mLeftPictureGroups.size() + 1];
+            mRightViewsHeights = new int[mRightPictureGroups.size()];
+            imageView.getLayoutParams().height = (int)(-heightDiff * metrics.widthPixels);
             mListViewLeft.addFooterView(footerView);
         }
 
-        mLeftAdapter = new PictureGroupAdapter(this, leftPictureGroups, mImageListLoader);
-        mRightAdapter = new PictureGroupAdapter(this, rightPictureGroups, mImageListLoader);
+        mLeftAdapter = new PictureGroupAdapter(this, mLeftPictureGroups, mImageListLoader);
+        mRightAdapter = new PictureGroupAdapter(this, mRightPictureGroups, mImageListLoader);
         mListViewLeft.setAdapter(mLeftAdapter);
         mListViewRight.setAdapter(mRightAdapter);
 
@@ -233,21 +245,25 @@ public class PictureGroupActivity extends Activity {
         getActionBar().show();
     }
 
-    private int getMainPicturesHeight(List<PictureGroup> pictureGroupList) {
-        int height = 0;
+    private double getRelativeMainPicturesHeight(List<PictureGroup> pictureGroupList) {
+        double height = 0;
         for (PictureGroup pictureGroup : pictureGroupList) {
-            height += pictureGroup.getMainPictureHeight();
+            height += pictureGroup.getMainPicture().getRelativeHeight();
         }
         return height;
     }
 
     private void dividePictureGroups(List<PictureGroup> pictureGroups, List<PictureGroup> leftPictureGroups, List<PictureGroup> rightPictureGroups) {
-        final int size = pictureGroups.size();
-        for (int i=0; i<size; i++) {
-            if (i % 2 == 0) {
-                leftPictureGroups.add(pictureGroups.get(i));
+        double leftHeight = 0;
+        double rightHeight = 0;
+
+        for (final PictureGroup pictureGroup : pictureGroups) {
+            if (leftHeight <= rightHeight) {
+                leftHeight += pictureGroup.getMainPicture().getRelativeHeight();
+                leftPictureGroups.add(pictureGroup);
             } else {
-                rightPictureGroups.add(pictureGroups.get(i));
+                rightHeight += pictureGroup.getMainPicture().getRelativeHeight();
+                rightPictureGroups.add(pictureGroup);
             }
         }
     }

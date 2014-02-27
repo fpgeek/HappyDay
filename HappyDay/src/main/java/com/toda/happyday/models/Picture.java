@@ -79,6 +79,10 @@ public class Picture implements Parcelable {
         return height;
     }
 
+    public double getRelativeHeight() {
+        return (double)height / (double)width;
+    }
+
     public String getMonthText() {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);

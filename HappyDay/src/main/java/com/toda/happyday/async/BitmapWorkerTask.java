@@ -10,7 +10,6 @@ import android.util.LruCache;
 import android.widget.ImageView;
 import android.widget.ListView;
 
-import com.google.android.gms.internal.bi;
 import com.toda.happyday.models.Picture;
 
 import java.lang.ref.WeakReference;

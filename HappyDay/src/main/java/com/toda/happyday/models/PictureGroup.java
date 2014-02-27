@@ -59,10 +59,6 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
 //        return height;
 //    }
 
-    public int getMainPictureHeight() {
-        return getMainPicture().getHeight();
-    }
-
     public Picture getMainPicture() {
         return this.get(mSelectedIndex);
     }
