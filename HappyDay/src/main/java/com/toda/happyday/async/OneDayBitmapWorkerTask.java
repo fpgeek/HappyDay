@@ -12,8 +12,8 @@ import com.toda.happyday.utils.BitmapUtils;
  */
 public class OneDayBitmapWorkerTask extends BitmapWorkerTask {
 
-    public OneDayBitmapWorkerTask(Picture picture, ImageView imageView, ListView listView, int position) {
-        super(picture, imageView, listView, position);
+    public OneDayBitmapWorkerTask(Picture picture, ImageView imageView, int position) {
+        super(picture, imageView, position);
     }
 
     @Override
@@ -25,6 +25,7 @@ public class OneDayBitmapWorkerTask extends BitmapWorkerTask {
     }
 
     private boolean shouldDecodeBitmap() {
-        return listView.getFirstVisiblePosition() - 2 <= position && position <= listView.getLastVisiblePosition() + 2;
+        return true;
+//        return listView.getFirstVisiblePosition() - 2 <= position && position <= listView.getLastVisiblePosition() + 2;
     }
 }

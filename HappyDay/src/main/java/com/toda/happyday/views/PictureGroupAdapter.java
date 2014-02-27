@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.path.android.jobqueue.JobManager;
@@ -108,9 +107,9 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
             viewHolder.pictureImageView.getLayoutParams().height = (int)(ratio * (double)imageViewWidth);
         }
 
-        ListView listView = (ListView)parent;
+//        ListView listView = (ListView)parent;
 
-        BitmapWorkerTask bitmapWorkerTask = new PictureGroupBitmapWorkerTask(mActivity.getContentResolver(), picture, viewHolder.pictureImageView, listView, position);
+        BitmapWorkerTask bitmapWorkerTask = new PictureGroupBitmapWorkerTask(mActivity.getContentResolver(), picture, viewHolder.pictureImageView, position);
 
         if (picture.getThumbnailBitmap() == null) {
             mImageListLoader.loadBitmap(picture, mLoadingBitmap, viewHolder.pictureImageView, bitmapWorkerTask);

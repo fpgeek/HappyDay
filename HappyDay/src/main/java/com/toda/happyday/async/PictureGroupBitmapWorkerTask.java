@@ -16,8 +16,8 @@ public class PictureGroupBitmapWorkerTask extends BitmapWorkerTask {
 
     private ContentResolver mContentResolver;
 
-    public PictureGroupBitmapWorkerTask(ContentResolver contentResolver, Picture picture, ImageView imageView, ListView listView, int position) {
-        super(picture, imageView, listView, position);
+    public PictureGroupBitmapWorkerTask(ContentResolver contentResolver, Picture picture, ImageView imageView, int position) {
+        super(picture, imageView, position);
         mContentResolver = contentResolver;
     }
 

@@ -44,14 +44,12 @@ abstract public class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
     private final WeakReference<ImageView> imageViewReference;
     protected Picture mPicture;
     protected String imagePath;
-    protected ListView listView;
     protected int position;
 
-    public BitmapWorkerTask(Picture picture, ImageView imageView, ListView listView, int position) {
+    public BitmapWorkerTask(Picture picture, ImageView imageView, int position) {
         // Use a WeakReference to ensure the ImageView can be garbage collected
         this.mPicture = picture;
         this.imageViewReference = new WeakReference<ImageView>(imageView);
-        this.listView = listView;
         this.position = position;
     }
 

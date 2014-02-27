@@ -2,7 +2,6 @@ package com.toda.happyday.views;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -10,24 +9,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.gson.Gson;
 import com.toda.happyday.R;
 import com.toda.happyday.presenters.PictureGroupPresenter;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-
-import br.com.condesales.models.Venue;
 
 public class MainActivity extends Activity {
 
