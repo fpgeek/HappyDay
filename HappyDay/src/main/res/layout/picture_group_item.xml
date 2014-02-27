@@ -13,15 +13,6 @@
             android:layout_width="fill_parent"
             android:scaleType="fitXY"/>
 
-        <!--<TextView android:id="@+id/time_text"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_gravity="bottom|right"-->
-            <!--android:layout_marginRight="10dip"-->
-            <!--android:layout_marginBottom="80dip"-->
-            <!--android:textSize="12sp"-->
-            <!--android:textColor="@android:color/white"/>-->
-
         <RelativeLayout
             android:layout_height="match_parent"
             android:layout_width="match_parent"
@@ -54,18 +45,6 @@
                 android:textColor="@android:color/white"/>
 
         </RelativeLayout>
-
-
-
-        <!--<TextView android:id="@+id/full_date_text"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_gravity="bottom|right"-->
-            <!--android:layout_marginRight="10dip"-->
-            <!--android:layout_marginBottom="10dip"-->
-            <!--android:textSize="12sp"-->
-            <!--android:textColor="@android:color/white"/>-->
-
     </FrameLayout>
 
     <RelativeLayout

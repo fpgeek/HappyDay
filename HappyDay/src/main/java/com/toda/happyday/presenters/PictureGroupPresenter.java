@@ -1,8 +1,11 @@
 package com.toda.happyday.presenters;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.os.Parcelable;
 
 import com.toda.happyday.async.AsyncPostExecute;
 import com.toda.happyday.views.PictureGroupActivity;
@@ -23,14 +26,14 @@ import java.util.Map;
  */
 public class PictureGroupPresenter {
 
-    private PictureGroupActivity mPictureGroupActivity;
+    private Activity mActivity;
     private DailyInfoDbHelper mDbHelper;
     private List<Picture> mPictureList;
     private final static long TAKEN_DATE_DIFF_MS = 1000 * 60 * 60; // 사진이 묶이는 시간 차이 - 1시간
 
-    public PictureGroupPresenter(PictureGroupActivity pictureGroupActivity) {
-        mPictureGroupActivity = pictureGroupActivity;
-        mDbHelper = new DailyInfoDbHelper(mPictureGroupActivity);
+    public PictureGroupPresenter(Activity activity) {
+        mActivity = activity;
+        mDbHelper = new DailyInfoDbHelper(mActivity);
     }
 
     private AsyncPostExecute<List<Picture>> mOnPostGetPictureList = new AsyncPostExecute<List<Picture>>() {
@@ -49,22 +52,6 @@ public class PictureGroupPresenter {
         }
     };
 
-    private static class AppStartExecute implements AsyncPostExecute<Bitmap> {
-
-        private PictureGroupActivity mPictureGroupActivity;
-        private List<PictureGroup> mPictureGroupList;
-
-        public AppStartExecute(PictureGroupActivity pictureGroupActivity, List<PictureGroup> pictureGroupList) {
-            mPictureGroupActivity = pictureGroupActivity;
-            mPictureGroupList = pictureGroupList;
-        }
-
-        @Override
-        public void onPostExecute(Bitmap t) {
-            mPictureGroupActivity.setPictureGroups(mPictureGroupList);
-        }
-    }
-
     private AsyncPostExecute<List<PictureGroup>> mOnPostGetPictureGroupList = new AsyncPostExecute<List<PictureGroup>>() {
         @Override
         public void onPostExecute(List<PictureGroup> pictureGroupList) {
@@ -72,7 +59,7 @@ public class PictureGroupPresenter {
             Map<Long, PictureGroup> pictureGroupHashMap = pictureGroupListToMap(pictureGroupList);
             List<List<Picture>> pictureGroupListGroupByTimes = pictureListToListGroupByTime(mPictureList);
 
-            SharedPreferences sharedPreferences = mPictureGroupActivity.getSharedPreferences(mPictureGroupActivity.getString(R.string.preference_picture_info_key), Context.MODE_PRIVATE);
+            SharedPreferences sharedPreferences = mActivity.getSharedPreferences(mActivity.getString(R.string.preference_picture_info_key), Context.MODE_PRIVATE);
 
             for (List<Picture> picturesGroupByTime : pictureGroupListGroupByTimes) {
                 final long pictureGroupId = getPictureGroupId(sharedPreferences, picturesGroupByTime);
@@ -92,24 +79,17 @@ public class PictureGroupPresenter {
 
             Collections.sort(pictureGroupList, new PictureDateCompare());
 
-//            int pictureCount=0;
-//            for (PictureGroup pictureGroup : pictureGroupList) {
-//                if (pictureCount == 6) {
-//                    AppStartExecute appStartExecuteHandler = new AppStartExecute(mPictureGroupActivity, pictureGroupList);
-//                    new CreateThumbnailBitmapTask(mPictureGroupActivity.getContentResolver(), pictureGroup.getMainPicture(), appStartExecuteHandler).execute();
-//                } else {
-//                    new CreateThumbnailBitmapTask(mPictureGroupActivity.getContentResolver(), pictureGroup.getMainPicture(), null).execute();
-//                }
-//                ++pictureCount;
-//            }
+            Intent intent = new Intent(mActivity, PictureGroupActivity.class);
+            intent.putParcelableArrayListExtra(mActivity.getString(R.string.EXTRA_PICTURE_GROUP_LIST), new ArrayList<PictureGroup>(pictureGroupList));
+            mActivity.startActivity(intent);
 
-            mPictureGroupActivity.setPictureGroups(pictureGroupList);
+//            mPictureGroupActivity.setPictureGroups(pictureGroupList);
         }
     };
 
 
     public void loadPictureGroups() {
-        Picture.all(mPictureGroupActivity.getContentResolver(), mOnPostGetPictureList);
+        Picture.all(mActivity.getContentResolver(), mOnPostGetPictureList);
     }
 
     private PictureGroup newCreatePictureGroup(SharedPreferences sharedPreferences, List<Picture> picturesGroupByTime) {

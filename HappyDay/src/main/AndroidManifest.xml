@@ -24,14 +24,21 @@
             android:value="@integer/google_play_services_version" />
 
         <activity
-            android:name="com.toda.happyday.views.PictureGroupActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/HappyDayMainViewTheme" >
+            android:name="com.toda.happyday.views.MainActivity"
+            android:label="@string/title_activity_main"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity
+            android:name="com.toda.happyday.views.PictureGroupActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/HappyDayMainViewTheme" >
         </activity>
         <activity
             android:name="com.toda.happyday.views.OneDayActivity"
@@ -39,8 +46,8 @@
         </activity>
         <activity
             android:name="com.toda.happyday.views.WriteActivity"
-            android:screenOrientation="portrait"
-            android:label="@string/write">
+            android:label="@string/write"
+            android:screenOrientation="portrait" >
         </activity>
     </application>
 

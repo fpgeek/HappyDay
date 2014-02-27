@@ -32,9 +32,4 @@
             android:listSelector="@android:color/transparent" >
         </ListView>
     </LinearLayout>
-
-    <ImageView android:id="@+id/main_image"
-        android:layout_height="fill_parent"
-        android:layout_width="fill_parent"
-        android:background="@drawable/main"/>
 </FrameLayout>

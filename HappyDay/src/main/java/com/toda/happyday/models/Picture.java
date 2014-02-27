@@ -263,6 +263,7 @@ public class Picture implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeLong(id);
         parcel.writeLong(date.getTime());
         parcel.writeDouble(longitude);
         parcel.writeDouble(latitude);
@@ -274,6 +275,7 @@ public class Picture implements Parcelable {
     }
 
     private void readFromParcel(Parcel parcel) {
+        this.id = parcel.readLong();
         this.date = new Date(parcel.readLong());
         this.longitude = parcel.readDouble();
         this.latitude = parcel.readDouble();

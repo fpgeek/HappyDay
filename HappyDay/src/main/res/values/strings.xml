@@ -14,6 +14,7 @@
     <string name="preference_picture_info_key">com.toda.happyday.PREFERENCE_PICTURE_INFO_KEY</string>
     <string name="EXTRA_DAILY_GROUP_ID">dailyGroupId</string>
     <string name="EXTRA_DAIRY_TEXT">DairyText</string>
+    <string name="EXTRA_PICTURE_GROUP_LIST">pictureGroupList</string>
     <string name="title_activity_picture_list">PictureListActivity</string>
     <string name="extra_daily_data_array">DailyDataArray</string>
     <string name="latitude_longitude">%1$.8f, %2$.8f</string>
@@ -22,5 +23,5 @@
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="title_activity_happy_day">HappyDayActivity</string>
     <string name="write">글쓰기</string>
-
+    <string name="title_activity_main">MainActivity</string>
 </resources>

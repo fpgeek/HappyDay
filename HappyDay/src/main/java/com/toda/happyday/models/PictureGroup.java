@@ -271,6 +271,7 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
         parcel.writeInt(this.sticker);
         parcel.writeByte((byte) (this.isFavorite ? 1 : 0));
         parcel.writeString(this.locationText);
+        parcel.writeInt(mSelectedIndex);
         parcel.writeList(this);
     }
 
@@ -280,6 +281,7 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
         this.sticker = parcel.readInt();
         this.isFavorite = (parcel.readByte() != 0);
         this.locationText = parcel.readString();
+        this.mSelectedIndex = parcel.readInt();
         parcel.readList(this, getClass().getClassLoader());
     }
 }

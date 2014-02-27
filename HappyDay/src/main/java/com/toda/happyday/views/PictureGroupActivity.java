@@ -28,7 +28,7 @@ import java.util.List;
 public class PictureGroupActivity extends Activity {
 
     private final static int REQUEST_CODE_TO_ONE_DAY_ACTIVITY = 1;
-    private PictureGroupPresenter mPictureGroupPresenter;
+//    private PictureGroupPresenter mPictureGroupPresenter;
 
     private List<PictureGroup> mLeftPictureGroups;
     private List<PictureGroup> mRightPictureGroups;
@@ -49,16 +49,9 @@ public class PictureGroupActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getActionBar() != null) {
-            getActionBar().hide();
-        }
-
         setContentView(R.layout.picture_group_list);
 
         mImageListLoader = new ImageListLoader(this);
-
-        mPictureGroupPresenter = new PictureGroupPresenter(this);
-        mPictureGroupPresenter.loadPictureGroups();
 
         mListViewLeft = (ListView) findViewById(R.id.list_view_left);
         mListViewRight = (ListView) findViewById(R.id.list_view_right);
@@ -69,6 +62,9 @@ public class PictureGroupActivity extends Activity {
         mListViewRight.setOnScrollListener(scrollListener);
         mListViewLeft.setOnItemClickListener(itemClickListener);
         mListViewRight.setOnItemClickListener(itemClickListener);
+
+        List<PictureGroup> pictureGroups = getIntent().getParcelableArrayListExtra(getString(R.string.EXTRA_PICTURE_GROUP_LIST));
+        setPictureGroups(pictureGroups);
     }
 
     // Passing the touch event to the opposite list
@@ -238,11 +234,6 @@ public class PictureGroupActivity extends Activity {
         mRightAdapter = new PictureGroupAdapter(this, mRightPictureGroups, mImageListLoader);
         mListViewLeft.setAdapter(mLeftAdapter);
         mListViewRight.setAdapter(mRightAdapter);
-
-        ImageView mainImageView = (ImageView) findViewById(R.id.main_image);
-        mainImageView.setVisibility(View.INVISIBLE);
-
-        getActionBar().show();
     }
 
     private double getRelativeMainPicturesHeight(List<PictureGroup> pictureGroupList) {
