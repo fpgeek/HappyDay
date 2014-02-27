@@ -12,6 +12,7 @@
     <string name="title_activity_sticker">StickerActivity</string>
     <string name="action_save">저장</string>
     <string name="preference_picture_info_key">com.toda.happyday.PREFERENCE_PICTURE_INFO_KEY</string>
+    <string name="preference_picture_to_location_key">com.toda.happyday.PREFERENCE_PICTURE_TO_LOCATION_KEY</string>
     <string name="EXTRA_DAILY_GROUP_ID">dailyGroupId</string>
     <string name="EXTRA_DAIRY_TEXT">DairyText</string>
     <string name="EXTRA_PICTURE_GROUP_LIST">pictureGroupList</string>
@@ -23,5 +24,4 @@
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="title_activity_happy_day">HappyDayActivity</string>
     <string name="write">글쓰기</string>
-    <string name="title_activity_main">MainActivity</string>
 </resources>

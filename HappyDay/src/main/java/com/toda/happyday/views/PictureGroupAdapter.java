@@ -2,15 +2,8 @@ package com.toda.happyday.views;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.util.DisplayMetrics;
-import android.util.Log;
-import android.util.LruCache;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -19,15 +12,19 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.path.android.jobqueue.JobManager;
 import com.toda.happyday.R;
+import com.toda.happyday.async.AsyncPostExecute;
 import com.toda.happyday.async.BitmapWorkerTask;
 import com.toda.happyday.async.PictureGroupBitmapWorkerTask;
+import com.toda.happyday.job.LocationJob;
 import com.toda.happyday.models.PictureGroup;
 import com.toda.happyday.models.Picture;
 import com.toda.happyday.utils.TextViewUtil;
 
-import java.lang.ref.WeakReference;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by fpgeek on 2014. 1. 25..
@@ -43,6 +40,8 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
 //    private static Bitmap mLoadingBitmap;
     private static Bitmap mLoadingBitmap = null;
     private static ImageListLoader mImageListLoader;
+    private JobManager mJobManager;
+    private Set<Long> mLocationJobPictureIdSet;
 
     public PictureGroupAdapter(Activity activity, List<PictureGroup> pictureGroups, ImageListLoader imageListLoader) {
         super(activity, R.layout.picture_group_item, pictureGroups);
@@ -59,6 +58,9 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
 //        mLoadingBitmap = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.img_loading);
 
         mImageListLoader = imageListLoader;
+
+        mJobManager = new JobManager(getContext());
+        mLocationJobPictureIdSet = new HashSet<Long>();
     }
 
     @Override
@@ -75,6 +77,7 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
             viewHolder.stickerImageView = (ImageView)convertView.findViewById(R.id.sticker_thumb);
             viewHolder.dairyTextView = (TextView)convertView.findViewById(R.id.dairy_text);
             viewHolder.dateTextView = (TextView)convertView.findViewById(R.id.date_text);
+            viewHolder.locationTextView = (TextView)convertView.findViewById(R.id.location_text);
             viewHolder.position = position;
 
             convertView.setTag(viewHolder);
@@ -90,6 +93,7 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
         viewHolder.stickerImageView.setImageResource(pictureGroup.getSticker());
         TextViewUtil.setText(viewHolder.dairyTextView, pictureGroup.getDairyText());
         TextViewUtil.setText(viewHolder.dateTextView, picture.getDateText());
+        TextViewUtil.setText(viewHolder.locationTextView, picture.getLocation());
 
         final int imageViewWidth = windowWidth / 2;
 
@@ -114,8 +118,24 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
             mImageListLoader.loadBitmap(picture, picture.getThumbnailBitmap(), viewHolder.pictureImageView, bitmapWorkerTask);
         }
 
+        if (picture.getLocation() == null && picture.hasValidLocationInfo()) {
+            mJobManager.addJobInBackground(new LocationJob(getContext(), picture, mLocationJobPictureIdSet, new LocationPostListener()));
+        }
 
         return convertView;
+    }
+
+    private class LocationPostListener implements AsyncPostExecute<String> {
+
+        public LocationPostListener() {
+        }
+
+        @Override
+        public void onPostExecute(String location) {
+            if (location != null) {
+                notifyDataSetChanged();
+            }
+        }
     }
 
     private static class ViewHolder {
@@ -126,5 +146,6 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
         public TextView dairyTextView;
         public int position;
         public TextView dateTextView;
+        public TextView locationTextView;
     }
 }

@@ -6,10 +6,13 @@ import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.util.LruCache;
 import android.widget.ImageView;
 import android.widget.ListView;
 
+import com.path.android.jobqueue.JobManager;
+import com.toda.happyday.job.LocationJob;
 import com.toda.happyday.models.Picture;
 
 import java.lang.ref.WeakReference;
@@ -26,7 +29,7 @@ abstract public class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
         final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
 
         // Use 1/8th of the available memory for this memory cache.
-        final int cacheSize = maxMemory / 16;
+        final int cacheSize = maxMemory / 8;
 
         mMemoryCache = new LruCache<String, Bitmap>(cacheSize) {
             @Override
@@ -75,6 +78,7 @@ abstract public class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
     // Once complete, see if ImageView is still around and set bitmap.
     @Override
     protected void onPostExecute(Bitmap bitmap) {
+
         if (isCancelled()) {
             bitmap = null;
         }

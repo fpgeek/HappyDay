@@ -59,9 +59,10 @@
 
         <TextView android:id="@+id/location_text"
             android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_below="@id/dairy_text"
             android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@+id/date_text"
             android:textSize="14sp"
             />
 

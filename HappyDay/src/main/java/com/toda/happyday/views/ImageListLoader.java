@@ -5,8 +5,13 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 
+import com.path.android.jobqueue.JobManager;
 import com.toda.happyday.async.BitmapWorkerTask;
+import com.toda.happyday.job.LocationJob;
 import com.toda.happyday.models.Picture;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by fpgeek on 2014. 2. 15..

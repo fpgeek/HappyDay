@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.os.Parcelable;
 
 import com.toda.happyday.async.AsyncPostExecute;
 import com.toda.happyday.views.PictureGroupActivity;
@@ -89,7 +87,7 @@ public class PictureGroupPresenter {
 
 
     public void loadPictureGroups() {
-        Picture.all(mActivity.getContentResolver(), mOnPostGetPictureList);
+        Picture.all(mActivity, mOnPostGetPictureList);
     }
 
     private PictureGroup newCreatePictureGroup(SharedPreferences sharedPreferences, List<Picture> picturesGroupByTime) {
