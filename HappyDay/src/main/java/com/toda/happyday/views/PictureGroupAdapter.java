@@ -34,7 +34,7 @@ import java.util.Set;
  */
 public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
 
-    private static final String TAG = "PictureGroupAdapter";
+    private static final String CACHE_NAME = "All";
 
     private Activity mActivity;
     private List<PictureGroup> mPictureGroups;
@@ -113,10 +113,8 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
             viewHolder.pictureImageView.getLayoutParams().height = (int)(ratio * (double)imageViewWidth);
         }
 
-        BitmapWorkerTask bitmapWorkerTask = new PictureGroupBitmapWorkerTask(mActivity.getContentResolver(), picture, viewHolder.pictureImageView, position);
-        mImageListLoader.loadBitmap(picture, null, viewHolder.pictureImageView, bitmapWorkerTask);
-
-        Log.i(TAG, "picture loaction : " + picture.getLongitude() + ", " + picture.getLatitude());
+        BitmapWorkerTask bitmapWorkerTask = new PictureGroupBitmapWorkerTask(mActivity.getContentResolver(), picture, viewHolder.pictureImageView, position, CACHE_NAME);
+        mImageListLoader.loadBitmap(picture, null, viewHolder.pictureImageView, bitmapWorkerTask, CACHE_NAME);
 
         if (picture.getLocation() == null && picture.hasValidLocationInfo()) {
             mJobManager.addJobInBackground(new LocationJob(getContext(), picture, mLocationJobPictureIdSet, new LocationPostListener()));

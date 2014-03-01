@@ -27,7 +27,7 @@ import com.toda.happyday.utils.TextViewUtil;
  */
 public class OneDayAdapter extends ArrayAdapter<Picture> {
 
-    private static final String TAG = "OneDayAdapter";
+    private static final String CACHE_NAME = "One";
     private Activity mActivity;
     private PictureGroup mPictureGroup;
 
@@ -87,8 +87,8 @@ public class OneDayAdapter extends ArrayAdapter<Picture> {
             viewHolder.pictureImageView.getLayoutParams().height = (int)(ratio * (double)imageViewWidth);
         }
 
-        BitmapWorkerTask bitmapWorkerTask = new OneDayBitmapWorkerTask(picture, viewHolder.pictureImageView, position);
-        mImageListLoader.loadBitmap(picture, null, viewHolder.pictureImageView, bitmapWorkerTask);
+        BitmapWorkerTask bitmapWorkerTask = new OneDayBitmapWorkerTask(picture, viewHolder.pictureImageView, position, CACHE_NAME);
+        mImageListLoader.loadBitmap(picture, null, viewHolder.pictureImageView, bitmapWorkerTask, CACHE_NAME);
 
         return convertView;
     }

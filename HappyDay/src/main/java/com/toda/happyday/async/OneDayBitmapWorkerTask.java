@@ -4,6 +4,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.graphics.Bitmap;
 
+import com.google.android.gms.internal.ch;
 import com.toda.happyday.models.Picture;
 import com.toda.happyday.utils.BitmapUtils;
 
@@ -12,8 +13,8 @@ import com.toda.happyday.utils.BitmapUtils;
  */
 public class OneDayBitmapWorkerTask extends BitmapWorkerTask {
 
-    public OneDayBitmapWorkerTask(Picture picture, ImageView imageView, int position) {
-        super(picture, imageView, position);
+    public OneDayBitmapWorkerTask(Picture picture, ImageView imageView, int position, String cacheName) {
+        super(picture, imageView, position, cacheName);
     }
 
     @Override

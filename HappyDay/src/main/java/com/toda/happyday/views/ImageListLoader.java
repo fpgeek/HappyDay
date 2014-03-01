@@ -19,10 +19,10 @@ public class ImageListLoader {
         mContext = context;
     }
 
-    public void loadBitmap(Picture picture, Bitmap loadingBitmap, ImageView imageView, BitmapWorkerTask bitmapWorkerTask) {
+    public void loadBitmap(Picture picture, Bitmap loadingBitmap, ImageView imageView, BitmapWorkerTask bitmapWorkerTask, String cacheName) {
         boolean isCancelWork = cancelPotentialWork(picture.getImagePath(), imageView);
 
-        final Bitmap bitmap = bitmapWorkerTask.getBitmapFromMemCache(picture.getImagePath());
+        final Bitmap bitmap = bitmapWorkerTask.getBitmapFromMemCache(cacheName + picture.getImagePath());
         if (bitmap != null) {
             imageView.setImageBitmap(bitmap);
         } else {

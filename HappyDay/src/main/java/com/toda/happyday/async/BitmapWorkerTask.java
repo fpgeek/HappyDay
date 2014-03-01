@@ -46,12 +46,14 @@ abstract public class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
     protected Picture mPicture;
     protected String imagePath;
     protected int position;
+    protected String cacheName;
 
-    public BitmapWorkerTask(Picture picture, ImageView imageView, int position) {
+    public BitmapWorkerTask(Picture picture, ImageView imageView, int position, String cacheName) {
         // Use a WeakReference to ensure the ImageView can be garbage collected
         this.mPicture = picture;
         this.imageViewReference = new WeakReference<ImageView>(imageView);
         this.position = position;
+        this.cacheName = cacheName;
     }
 
     abstract public Bitmap createBitmap(ImageView imageView);
@@ -72,7 +74,7 @@ abstract public class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
                 mx.postRotate(mPicture.getDegrees());
                 bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), mx ,true);
             }
-            addBitmapToMemoryCache(imagePath, bitmap);
+            addBitmapToMemoryCache(cacheName + imagePath, bitmap);
             return bitmap;
         }
         return null;
