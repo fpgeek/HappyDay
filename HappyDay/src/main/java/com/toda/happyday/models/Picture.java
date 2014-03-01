@@ -95,10 +95,6 @@ public class Picture implements Parcelable {
         return height;
     }
 
-    public double getRelativeHeight() {
-        return (double)height / (double)width;
-    }
-
     public String getMonthText() {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -234,7 +230,7 @@ public class Picture implements Parcelable {
     }
 
     public String getDateText() {
-        return DateFormat.getDateInstance(DateFormat.DATE_FIELD).format(date);
+        return DateFormat.getDateInstance(DateFormat.MEDIUM).format(date);
     }
 
     public String getDayText() {
@@ -244,7 +240,7 @@ public class Picture implements Parcelable {
     }
 
     public String getTimeText() {
-        return DateFormat.getTimeInstance().format(date);
+        return DateFormat.getTimeInstance(DateFormat.SHORT).format(date);
     }
 
     public void setDate(Date date) {
