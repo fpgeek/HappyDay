@@ -3,10 +3,12 @@ package com.toda.happyday.async;
 import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaMetadataRetriever;
 import android.provider.MediaStore;
 import android.widget.ImageView;
 import android.widget.ListView;
 
+import com.google.android.gms.internal.bi;
 import com.toda.happyday.models.Picture;
 
 /**
@@ -23,6 +25,12 @@ public class PictureGroupBitmapWorkerTask extends BitmapWorkerTask {
 
     @Override
     public Bitmap createBitmap(ImageView imageView) {
-        return MediaStore.Images.Thumbnails.getThumbnail(mContentResolver, mPicture.getId(), MediaStore.Images.Thumbnails.MINI_KIND, null);
+        if (mPicture.getType() == Picture.TYPE_IMAGE) {
+            return MediaStore.Images.Thumbnails.getThumbnail(mContentResolver, mPicture.getId(), MediaStore.Images.Thumbnails.MINI_KIND, null);
+        } else {
+            MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
+            metaRetriever.setDataSource(mPicture.getFilePath());
+            return metaRetriever.getFrameAtTime(0);
+        }
     }
 }

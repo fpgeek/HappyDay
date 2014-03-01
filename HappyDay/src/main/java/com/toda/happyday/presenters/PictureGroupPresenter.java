@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 
+import com.google.android.gms.internal.em;
 import com.toda.happyday.async.AsyncPostExecute;
 import com.toda.happyday.views.PictureGroupActivity;
 import com.toda.happyday.R;
@@ -71,8 +72,18 @@ public class PictureGroupPresenter {
                 }
             }
 
+            // TODO - 삭제된 이미지들을 가지고 있던 picture group 제거하기
+            List<PictureGroup> emptyPictureGroup = new ArrayList<PictureGroup>();
             for (PictureGroup pictureGroup : pictureGroupList) {
-                pictureGroup.selectMainPicture();
+                if (pictureGroup.isEmpty()) {
+                    emptyPictureGroup.add(pictureGroup);
+                } else {
+                    pictureGroup.selectMainPicture();
+                }
+            }
+
+            for (PictureGroup pictureGroup : emptyPictureGroup) {
+                pictureGroupList.remove(pictureGroup);
             }
 
             Collections.sort(pictureGroupList, new PictureDateCompare());

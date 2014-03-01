@@ -1,5 +1,6 @@
 package com.toda.happyday.async;
 
+import android.media.MediaMetadataRetriever;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.graphics.Bitmap;
@@ -19,14 +20,13 @@ public class OneDayBitmapWorkerTask extends BitmapWorkerTask {
 
     @Override
     public Bitmap createBitmap(ImageView imageView) {
-        if (shouldDecodeBitmap()) {
+        if (mPicture.getType() == Picture.TYPE_IMAGE) {
             return BitmapUtils.decodeSampledBitmapFromFile(imagePath, imageView.getLayoutParams().width / 2, imageView.getLayoutParams().height / 2);
+        } else {
+            MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
+            metaRetriever.setDataSource(mPicture.getFilePath());
+            return metaRetriever.getFrameAtTime(0);
         }
-        return null;
-    }
 
-    private boolean shouldDecodeBitmap() {
-        return true;
-//        return listView.getFirstVisiblePosition() - 2 <= position && position <= listView.getLastVisiblePosition() + 2;
     }
 }

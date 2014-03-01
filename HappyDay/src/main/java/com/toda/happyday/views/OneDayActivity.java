@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -30,10 +31,13 @@ import android.widget.TextView;
 import com.google.android.gms.internal.ac;
 import com.toda.happyday.R;
 import com.toda.happyday.async.OneDayBitmapWorkerTask;
+import com.toda.happyday.models.Picture;
 import com.toda.happyday.models.db.DailyInfo;
 import com.toda.happyday.models.db.DailyInfoDbHelper;
 import com.toda.happyday.models.PictureGroup;
 import com.toda.happyday.utils.TextViewUtil;
+
+import java.io.File;
 
 public class OneDayActivity extends FragmentActivity {
 
@@ -193,6 +197,32 @@ public class OneDayActivity extends FragmentActivity {
             return rootView;
         }
 
+        AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                int index = (i - 1);
+                if (0 <= index && index < mPictureGroup.size()) {
+                    Picture picture = mPictureGroup.get(i-1);
+
+                    if (picture != null) {
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+
+                        if (picture.getType() == Picture.TYPE_IMAGE) {
+                            Uri uri = Uri.fromFile(new File(picture.getFilePath()));
+                            intent.setDataAndType(uri, "image/*");
+                        } else {
+                            Uri uri = Uri.parse(picture.getFilePath());
+                            intent.setDataAndType(uri, "video/*");
+                        }
+                        startActivity(intent);
+                    }
+                }
+
+
+            }
+        };
+
         @Override
         public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
@@ -200,6 +230,8 @@ public class OneDayActivity extends FragmentActivity {
             if (mHeaderView != null) {
                 getListView().addHeaderView(mHeaderView);
             }
+
+            getListView().setOnItemClickListener(itemClickListener);
 
             OneDayAdapter listAdapter = new OneDayAdapter(getActivity(), mPictureGroup, mImageListLoader);
             setListAdapter(listAdapter);

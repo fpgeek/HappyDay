@@ -20,9 +20,9 @@ public class ImageListLoader {
     }
 
     public void loadBitmap(Picture picture, Bitmap loadingBitmap, ImageView imageView, BitmapWorkerTask bitmapWorkerTask, String cacheName) {
-        boolean isCancelWork = cancelPotentialWork(picture.getImagePath(), imageView);
+        boolean isCancelWork = cancelPotentialWork(picture.getFilePath(), imageView);
 
-        final Bitmap bitmap = bitmapWorkerTask.getBitmapFromMemCache(cacheName + picture.getImagePath());
+        final Bitmap bitmap = bitmapWorkerTask.getBitmapFromMemCache(cacheName + picture.getFilePath());
         if (bitmap != null) {
             imageView.setImageBitmap(bitmap);
         } else {
@@ -31,7 +31,7 @@ public class ImageListLoader {
                 final BitmapWorkerTask.AsyncDrawable asyncDrawable =
                         new BitmapWorkerTask.AsyncDrawable(mContext.getResources(), loadingBitmap, task);
                 imageView.setImageDrawable(asyncDrawable);
-                task.execute(picture.getImagePath());
+                task.execute(picture.getFilePath());
             }
         }
     }

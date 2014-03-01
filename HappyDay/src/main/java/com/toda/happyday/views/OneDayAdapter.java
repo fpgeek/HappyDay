@@ -64,6 +64,7 @@ public class OneDayAdapter extends ArrayAdapter<Picture> {
             viewHolder = new ViewHolder();
             viewHolder.pictureImageView = (ImageView)convertView.findViewById(R.id.picture);
             viewHolder.timeTextView = (TextView)convertView.findViewById(R.id.time_text);
+            viewHolder.videoIconImageView = (ImageView)convertView.findViewById(R.id.video_icon);
 
             convertView.setTag(viewHolder);
         } else {
@@ -87,6 +88,12 @@ public class OneDayAdapter extends ArrayAdapter<Picture> {
             viewHolder.pictureImageView.getLayoutParams().height = (int)(ratio * (double)imageViewWidth);
         }
 
+        if (picture.getType() == Picture.TYPE_IMAGE) {
+            viewHolder.videoIconImageView.setVisibility(View.GONE);
+        } else {
+            viewHolder.videoIconImageView.setVisibility(View.VISIBLE);
+        }
+
         BitmapWorkerTask bitmapWorkerTask = new OneDayBitmapWorkerTask(picture, viewHolder.pictureImageView, position, CACHE_NAME);
         mImageListLoader.loadBitmap(picture, null, viewHolder.pictureImageView, bitmapWorkerTask, CACHE_NAME);
 
@@ -96,5 +103,6 @@ public class OneDayAdapter extends ArrayAdapter<Picture> {
     private static class ViewHolder {
         public ImageView pictureImageView;
         public TextView timeTextView;
+        public ImageView videoIconImageView;
     }
 }

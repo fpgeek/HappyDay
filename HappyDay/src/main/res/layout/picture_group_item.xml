@@ -23,6 +23,14 @@
             android:background="@android:color/transparent"
             />
 
+        <ImageView android:id="@+id/video_icon"
+            android:layout_height="50dp"
+            android:layout_width="50dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_movie"
+            android:visibility="gone"
+            />
+
         <RelativeLayout
             android:layout_height="match_parent"
             android:layout_width="match_parent"

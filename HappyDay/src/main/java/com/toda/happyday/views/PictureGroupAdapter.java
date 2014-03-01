@@ -84,6 +84,7 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
             viewHolder.locationTextView = (TextView)convertView.findViewById(R.id.location_text);
             viewHolder.locationAreaLayout = (ViewGroup)convertView.findViewById(R.id.location_area);
             viewHolder.position = position;
+            viewHolder.videoIconImageView = (ImageView)convertView.findViewById(R.id.video_icon);
 
             convertView.setTag(viewHolder);
         } else {
@@ -100,6 +101,11 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
         TextViewUtil.setText(viewHolder.dateTextView, picture.getDateText());
         TextViewUtil.setText(viewHolder.locationTextView, picture.getLocation());
         viewHolder.locationAreaLayout.setOnClickListener(new LocationTextClickListener(mPictureGroups.get(position).getMainPicture()));
+        if (picture.getType() == Picture.TYPE_IMAGE) {
+            viewHolder.videoIconImageView.setVisibility(View.GONE);
+        } else {
+            viewHolder.videoIconImageView.setVisibility(View.VISIBLE);
+        }
 
         final int imageViewWidth = windowWidth / 2;
 
@@ -149,7 +155,7 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
         @Override
         public void onPostExecute(String location) {
             if (location != null) {
-                notifyDataSetChanged();
+//                notifyDataSetChanged();
             }
         }
     }
@@ -164,5 +170,6 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
         public TextView dateTextView;
         public TextView locationTextView;
         public ViewGroup locationAreaLayout;
+        public ImageView videoIconImageView;
     }
 }

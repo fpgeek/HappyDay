@@ -6,13 +6,17 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.hardware.Camera;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.MediaStore;
-import android.util.Log;
+import android.view.OrientationEventListener;
 
+import com.google.android.gms.internal.bi;
+import com.google.android.gms.internal.de;
 import com.toda.happyday.R;
 import com.toda.happyday.async.AsyncPostExecute;
 import com.toda.happyday.utils.BitmapUtils;
@@ -37,10 +41,16 @@ public class Picture implements Parcelable {
     private Bitmap thumbnailBitmap = null; // 다른 Activity에 전달할 때는 의도적으로 제외했음.
     private int width;
     private int height;
-    private int mDegrees;
+    private int mDegrees = 0;
+    private int type = TYPE_IMAGE;
+
+    public static final int TYPE_IMAGE = 0;
+    public static final int TYPE_VIDEO = 1;
 
     private final static Uri DB_IMAGE_URI = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-    private final static String[] DB_PROJECTION = {
+    private final static Uri DB_VIDEO_URI = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+
+    private final static String[] DB_IMAGE_PROJECTION = {
             MediaStore.Images.Media._ID,
             MediaStore.Images.Media.DATA,
             MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
@@ -50,7 +60,18 @@ public class Picture implements Parcelable {
             MediaStore.Images.Media.ORIENTATION,
             MediaStore.Images.Media.IS_PRIVATE
     };
-    private final static String DB_DATE_ORDER = MediaStore.Images.Media.DATE_TAKEN + " ASC";
+    private final static String[] DB_VIDEO_PROJECTION = {
+            MediaStore.Video.Media._ID,
+            MediaStore.Video.Media.DATA,
+            MediaStore.Video.Media.BUCKET_DISPLAY_NAME,
+            MediaStore.Video.Media.DATE_TAKEN,
+            MediaStore.Video.Media.LATITUDE,
+            MediaStore.Video.Media.LONGITUDE,
+            MediaStore.Video.Media.IS_PRIVATE
+    };
+
+    private final static String DB_IMAGE_DATE_ORDER = MediaStore.Images.Media.DATE_TAKEN + " ASC";
+    private final static String DB_VIDEO_DATE_ORDER = MediaStore.Video.VideoColumns.DATE_TAKEN + " ASC";
 
     private final static String MONTH_ENG_LIST[] = {
         "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
@@ -126,14 +147,21 @@ public class Picture implements Parcelable {
 
         @Override
         protected List<Picture> doInBackground(Void... voids) {
-            Cursor pictureCursor = getAllPictureCursor(mContext.getContentResolver());
+            List<Picture> pictureList = new ArrayList<Picture>();
 
-            List<Picture> pictureList = new ArrayList<Picture>(pictureCursor.getCount());
-            while(pictureCursor.moveToNext()) {
-                Picture picture = createPictureInfo(mContext, pictureCursor);
+            Cursor imageCursor = getAllImageCursor(mContext.getContentResolver());
+            while(imageCursor.moveToNext()) {
+                Picture picture = createImagePicture(mContext, imageCursor);
                 pictureList.add(picture);
             }
-            pictureCursor.close();
+            imageCursor.close();
+
+            Cursor videoCursor = getAllVideoCursor(mContext.getContentResolver());
+            while(videoCursor.moveToNext()) {
+                Picture picture = createVideoPicture(mContext, videoCursor);
+                pictureList.add(picture);
+            }
+            imageCursor.close();
 
             return pictureList;
         }
@@ -144,41 +172,44 @@ public class Picture implements Parcelable {
         }
     }
 
-//    public static Picture get(ContentResolver contentResolver, final long id) {
-//        Cursor pictureCursor = getPictureCursor(contentResolver, id);
-//        if (pictureCursor == null) { return null; }
-//
-//        return createPictureInfo(pictureCursor, contentResolver);
-//    }
-
-//    private static Cursor getPictureCursor(ContentResolver contentResolver, final long id) {
-//        String[] selectionArgs = {String.valueOf(id)};
-//        return getCursor(contentResolver, MediaStore.Images.Media._ID + " = ?", selectionArgs, DB_DATE_ORDER);
-//    }
-
-    private static Cursor getAllPictureCursor(ContentResolver contentResolver) {
-        return getCursor(contentResolver, null, null, DB_DATE_ORDER);
+    private static Cursor getAllImageCursor(ContentResolver contentResolver) {
+        return getImageCursor(contentResolver, null, null, DB_IMAGE_DATE_ORDER);
     }
 
-    private static Cursor getCursor(ContentResolver contentResolver, final String selection, final String[] selectionArgs, final String sortOrder) {
+    private static Cursor getAllVideoCursor(ContentResolver contentResolver) {
+        return getVideoCursor(contentResolver, null, null, DB_VIDEO_DATE_ORDER);
+    }
+
+    private static Cursor getImageCursor(ContentResolver contentResolver, final String selection, final String[] selectionArgs, final String sortOrder) {
         return contentResolver.query(
                 DB_IMAGE_URI,
-                DB_PROJECTION,
+                DB_IMAGE_PROJECTION,
                 selection,
                 selectionArgs,
                 sortOrder
         );
     }
 
-    private static Picture createPictureInfo(Context context, Cursor pictureCursor) {
+    private static Cursor getVideoCursor(ContentResolver contentResolver, final String selection, final String[] selectionArgs, final String sortOrder) {
+        return contentResolver.query(
+                DB_VIDEO_URI,
+                DB_VIDEO_PROJECTION,
+                selection,
+                selectionArgs,
+                sortOrder
+        );
+    }
+
+    private static Picture createImagePicture(Context context, Cursor pictureCursor) {
         Picture picture = new Picture();
+        picture.setType(TYPE_IMAGE);
         picture.setId(pictureCursor.getInt(pictureCursor.getColumnIndex(MediaStore.Images.Media._ID)));
 
         final long takenDateValue = pictureCursor.getLong(pictureCursor.getColumnIndex(MediaStore.Images.Media.DATE_TAKEN));
         picture.setDate(new Date(takenDateValue));
 
-        String imagePath = pictureCursor.getString(pictureCursor.getColumnIndex(MediaStore.Images.Media.DATA));
-        picture.setImagePath(imagePath);
+        String filePath = pictureCursor.getString(pictureCursor.getColumnIndex(MediaStore.Images.Media.DATA));
+        picture.setFilePath(filePath);
 
         final double longitudeValue = pictureCursor.getDouble(pictureCursor.getColumnIndex(MediaStore.Images.Media.LONGITUDE));
         picture.setLongitude(longitudeValue);
@@ -194,9 +225,54 @@ public class Picture implements Parcelable {
         final int orientation = pictureCursor.getInt(pictureCursor.getColumnIndex(MediaStore.Images.Media.ORIENTATION));
         picture.setDegrees(orientation);
 
-        BitmapFactory.Options bitmapOptions = BitmapUtils.getBitmapOptions(picture.getImagePath());
+        BitmapFactory.Options bitmapOptions = BitmapUtils.getBitmapOptions(picture.getFilePath());
         picture.setWidth(bitmapOptions.outWidth);
         picture.setHeight(bitmapOptions.outHeight);
+
+        return picture;
+    }
+
+    private static Picture createVideoPicture(Context context, Cursor pictureCursor) {
+        Picture picture = new Picture();
+        picture.setType(TYPE_VIDEO);
+        picture.setId(pictureCursor.getInt(pictureCursor.getColumnIndex(MediaStore.Video.Media._ID)));
+
+        final long takenDateValue = pictureCursor.getLong(pictureCursor.getColumnIndex(MediaStore.Video.Media.DATE_TAKEN));
+        picture.setDate(new Date(takenDateValue));
+
+        String filePath = pictureCursor.getString(pictureCursor.getColumnIndex(MediaStore.Video.Media.DATA));
+        picture.setFilePath(filePath);
+
+        final double longitudeValue = pictureCursor.getDouble(pictureCursor.getColumnIndex(MediaStore.Video.Media.LONGITUDE));
+        picture.setLongitude(longitudeValue);
+
+        final double latitudeValue = pictureCursor.getDouble(pictureCursor.getColumnIndex(MediaStore.Video.Media.LATITUDE));
+        picture.setLatitude(latitudeValue);
+
+        final String location = getLocationFromDb(context, picture.getId());
+        if (location != null) {
+            picture.setLocation(location);
+        }
+
+        {
+            MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
+            metaRetriever.setDataSource(picture.getFilePath());
+
+            String width = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
+            if (width != null) {
+                picture.setWidth(Integer.parseInt(width));
+            }
+
+            String height = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
+            if (width != null) {
+                picture.setHeight(Integer.parseInt(height));
+            }
+
+            String degrees = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION);
+            if (degrees != null) {
+                picture.setDegrees(Integer.parseInt(degrees));
+            }
+        }
 
         return picture;
     }
@@ -207,6 +283,14 @@ public class Picture implements Parcelable {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 
     public double getLongitude() {
@@ -251,11 +335,11 @@ public class Picture implements Parcelable {
         return date;
     }
 
-    public void setImagePath(String imagePath) {
+    public void setFilePath(String imagePath) {
         this.imagePath = imagePath;
     }
 
-    public String getImagePath() {
+    public String getFilePath() {
         return imagePath;
     }
 
@@ -302,6 +386,7 @@ public class Picture implements Parcelable {
         parcel.writeInt(width);
         parcel.writeInt(height);
         parcel.writeInt(mDegrees);
+        parcel.writeInt(type);
 //        parcel.writeParcelable(thumbnailBitmap, i);
     }
 
@@ -315,6 +400,7 @@ public class Picture implements Parcelable {
         this.width = parcel.readInt();
         this.height = parcel.readInt();
         this.mDegrees = parcel.readInt();
+        this.type = parcel.readInt();
 //        this.thumbnailBitmap = parcel.readParcelable(getClass().getClassLoader());
     }
 

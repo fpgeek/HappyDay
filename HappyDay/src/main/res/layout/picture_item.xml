@@ -25,6 +25,14 @@
             android:background="@android:color/transparent"
             />
 
+        <ImageView android:id="@+id/video_icon"
+            android:layout_height="70dp"
+            android:layout_width="70dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_movie"
+            android:visibility="gone"
+            />
+
     </FrameLayout>
 
     <TextView android:id="@+id/time_text"
