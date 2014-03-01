@@ -100,7 +100,10 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
         TextViewUtil.setText(viewHolder.dairyTextView, pictureGroup.getDairyText());
         TextViewUtil.setText(viewHolder.dateTextView, picture.getDateText());
         TextViewUtil.setText(viewHolder.locationTextView, picture.getLocation());
-        viewHolder.locationAreaLayout.setOnClickListener(new LocationTextClickListener(mPictureGroups.get(position).getMainPicture()));
+        LocationTextClickListener locationTextClickListener = new LocationTextClickListener(mPictureGroups.get(position).getMainPicture());
+        viewHolder.locationTextView.setOnClickListener(locationTextClickListener);
+        viewHolder.locationAreaLayout.setOnClickListener(locationTextClickListener);
+
         if (picture.getType() == Picture.TYPE_IMAGE) {
             viewHolder.videoIconImageView.setVisibility(View.GONE);
         } else {
