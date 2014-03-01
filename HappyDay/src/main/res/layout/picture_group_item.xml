@@ -69,24 +69,30 @@
             android:textColor="@color/dairy_text"
             />
 
-        <TextView android:id="@+id/location_text"
+        <RelativeLayout android:id="@+id/location_area"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:layout_below="@id/dairy_text"
-            android:layout_alignParentLeft="true"
-            android:textSize="12sp"
-            android:clickable="true"
-            android:longClickable="false"
-            android:textColor="@color/location_text"
-            />
+            android:layout_alignParentLeft="true">
 
-        <TextView android:id="@+id/date_text"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:layout_below="@id/location_text"
-            android:layout_alignParentLeft="true"
-            android:textSize="10sp"
-            android:textColor="@color/date_text"/>
+            <TextView android:id="@+id/location_text"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:textSize="12sp"
+                android:clickable="true"
+                android:longClickable="false"
+                android:textColor="@color/location_text"
+                />
+
+            <TextView android:id="@+id/date_text"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_below="@id/location_text"
+                android:layout_alignParentLeft="true"
+                android:textSize="10sp"
+                android:textColor="@color/date_text"/>
+
+        </RelativeLayout>
 
     </RelativeLayout>
 </LinearLayout>

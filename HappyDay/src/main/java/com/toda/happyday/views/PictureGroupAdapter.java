@@ -82,6 +82,7 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
             viewHolder.dairyTextView = (TextView)convertView.findViewById(R.id.dairy_text);
             viewHolder.dateTextView = (TextView)convertView.findViewById(R.id.date_text);
             viewHolder.locationTextView = (TextView)convertView.findViewById(R.id.location_text);
+            viewHolder.locationAreaLayout = (ViewGroup)convertView.findViewById(R.id.location_area);
             viewHolder.position = position;
 
             convertView.setTag(viewHolder);
@@ -98,7 +99,7 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
         TextViewUtil.setText(viewHolder.dairyTextView, pictureGroup.getDairyText());
         TextViewUtil.setText(viewHolder.dateTextView, picture.getDateText());
         TextViewUtil.setText(viewHolder.locationTextView, picture.getLocation());
-        viewHolder.locationTextView.setOnClickListener( new LocationTextClickListener(mPictureGroups.get(position).getMainPicture()) );
+        viewHolder.locationAreaLayout.setOnClickListener(new LocationTextClickListener(mPictureGroups.get(position).getMainPicture()));
 
         final int imageViewWidth = windowWidth / 2;
 
@@ -162,5 +163,6 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
         public int position;
         public TextView dateTextView;
         public TextView locationTextView;
+        public ViewGroup locationAreaLayout;
     }
 }
