@@ -158,9 +158,7 @@ public class OneDayActivity extends FragmentActivity {
         private ViewPager mStickerViewPager = null;
         private StickerCollectionPagerAdapter mStickerCollectionPagerAdapter = null;
 
-        private ImageView mStickerImage = null;
         private TextView mDairyTextView = null;
-//        private TextView mDateTextView = null;
 
         public PlaceholderFragment() {
         }
@@ -176,15 +174,12 @@ public class OneDayActivity extends FragmentActivity {
             ActionBar actionBar = getActionBar();
             if (actionBar != null) {
                 actionBar.setTitle(mPictureGroup.getMainPicture().getDateText());
+                if (mPictureGroup.hasSticker()) {
+                    actionBar.setIcon(mPictureGroup.getSticker());
+                }
             }
 
             mHeaderView = inflater.inflate(R.layout.daily_header, null, false);
-
-            mStickerImage = (ImageView) mHeaderView.findViewById(R.id.sticker_image);
-            if (mPictureGroup.hasSticker()) {
-                mStickerImage.setImageResource(mPictureGroup.getSticker());
-                mStickerImage.setVisibility(View.VISIBLE);
-            }
 
             mDairyTextView = (TextView) mHeaderView.findViewById(R.id.dairy_text);
             TextViewUtil.setText(mDairyTextView, mPictureGroup.getDairyText());
@@ -228,10 +223,6 @@ public class OneDayActivity extends FragmentActivity {
 
         public ViewPager getStickerViewPager() {
             return mStickerViewPager;
-        }
-
-        public ImageView getStickerImage() {
-            return mStickerImage;
         }
 
         public TextView getDiaryTextView() {
@@ -324,8 +315,10 @@ public class OneDayActivity extends FragmentActivity {
 
             if (updateSuccess) {
                 placeholderFragment.getPictureGroup().setSticker(stickerImageId);
-                placeholderFragment.getStickerImage().setImageResource(stickerImageId);
-                placeholderFragment.getStickerImage().setVisibility(View.VISIBLE);
+                ActionBar actionBar = getActionBar();
+                if (actionBar != null) {
+                    actionBar.setIcon(stickerImageId);
+                }
                 closeStickerView();
             }
         }
