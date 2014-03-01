@@ -44,11 +44,10 @@ public class OneDayActivity extends FragmentActivity {
     private static Integer[] STICKER_IMAGE_IDS = {
             R.drawable.sticker_1, R.drawable.sticker_2,
             R.drawable.sticker_3, R.drawable.sticker_4,
-            R.drawable.sticker_5, R.drawable.sticker_6,
+            R.drawable.sticker_11,
+            R.drawable.sticker_13, R.drawable.sticker_6,
             R.drawable.sticker_7, R.drawable.sticker_8,
-            R.drawable.sticker_9, R.drawable.sticker_10,
-            R.drawable.sticker_11, R.drawable.sticker_12,
-            R.drawable.sticker_13
+            R.drawable.sticker_10
     };
     private static final int STICKER_COUNT_PER_SCREEN = 10;
     private DailyInfoDbHelper dbHelper = null;
@@ -247,7 +246,7 @@ public class OneDayActivity extends FragmentActivity {
 
         @Override
         public int getCount() {
-            return (STICKER_IMAGE_IDS.length / STICKER_COUNT_PER_SCREEN) + 1;
+            return (STICKER_IMAGE_IDS.length / (STICKER_COUNT_PER_SCREEN + 1)) + 1;
         }
 
 //        @Override
@@ -364,7 +363,7 @@ public class OneDayActivity extends FragmentActivity {
             if (convertView == null) {
                 imageView = new ImageView(context);
                 imageView.setLayoutParams(new GridView.LayoutParams(85, 85));
-                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
                 imageView.setPadding(8, 8, 8, 8);
             } else {
                 imageView = (ImageView) convertView;
