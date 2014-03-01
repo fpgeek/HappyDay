@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -26,13 +27,13 @@ import com.toda.happyday.utils.TextViewUtil;
  */
 public class OneDayAdapter extends ArrayAdapter<Picture> {
 
+    private static final String TAG = "OneDayAdapter";
     private Activity mActivity;
     private PictureGroup mPictureGroup;
 
     private int mWindowWidth = 0;
     private int mWindowHeight = 0;
 
-//    private static Bitmap mLoadingBitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
     private static Bitmap mLoadingBitmap;
     private static ImageListLoader mImageListLoader;
 
@@ -48,8 +49,8 @@ public class OneDayAdapter extends ArrayAdapter<Picture> {
         mWindowWidth = metrics.widthPixels;
         mWindowHeight = metrics.heightPixels;
 
-        mLoadingBitmap = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.img_loading);
         mImageListLoader = imageListLoader;
+        mLoadingBitmap = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.loading);
     }
 
     @Override
@@ -77,24 +78,17 @@ public class OneDayAdapter extends ArrayAdapter<Picture> {
 
         {
             double ratio = 1;
-            if (picture.getDegrees() == 0) {
+            if (picture.getDegrees() == 0 || picture.getDegrees() == 180) {
                 ratio = (double)picture.getHeight() / (double)picture.getWidth();
-            } else if (picture.getDegrees() == 90) {
+            } else if (picture.getDegrees() == 90 || picture.getDegrees() == 270) {
                 ratio = (double)picture.getWidth() / (double)picture.getHeight();
             }
             viewHolder.pictureImageView.getLayoutParams().width = imageViewWidth;
             viewHolder.pictureImageView.getLayoutParams().height = (int)(ratio * (double)imageViewWidth);
         }
 
-//        ListView listView = (ListView)parent;
-
         BitmapWorkerTask bitmapWorkerTask = new OneDayBitmapWorkerTask(picture, viewHolder.pictureImageView, position);
-
-        if (picture.getThumbnailBitmap() == null) {
-            mImageListLoader.loadBitmap(picture, mLoadingBitmap, viewHolder.pictureImageView, bitmapWorkerTask);
-        } else {
-            mImageListLoader.loadBitmap(picture, picture.getThumbnailBitmap(), viewHolder.pictureImageView, bitmapWorkerTask);
-        }
+        mImageListLoader.loadBitmap(picture, null, viewHolder.pictureImageView, bitmapWorkerTask);
 
         return convertView;
     }

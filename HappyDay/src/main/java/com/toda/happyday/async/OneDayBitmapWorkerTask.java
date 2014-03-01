@@ -19,7 +19,7 @@ public class OneDayBitmapWorkerTask extends BitmapWorkerTask {
     @Override
     public Bitmap createBitmap(ImageView imageView) {
         if (shouldDecodeBitmap()) {
-            return BitmapUtils.decodeSampledBitmapFromFile(imagePath, mPicture.getDegrees(), imageView.getLayoutParams().width / 2, imageView.getLayoutParams().height / 2);
+            return BitmapUtils.decodeSampledBitmapFromFile(imagePath, imageView.getLayoutParams().width / 2, imageView.getLayoutParams().height / 2);
         }
         return null;
     }

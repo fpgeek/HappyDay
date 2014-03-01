@@ -11,7 +11,7 @@ import com.google.android.gms.internal.bi;
  */
 public class BitmapUtils {
 
-    public static Bitmap decodeSampledBitmapFromFile(String imagePath, int degrees, int reqWidth, int reqHeight) {
+    public static Bitmap decodeSampledBitmapFromFile(String imagePath, int reqWidth, int reqHeight) {
 
         // First decode with inJustDecodeBounds=true to check dimensions
         final BitmapFactory.Options options = getBitmapOptions(imagePath);
@@ -27,12 +27,6 @@ public class BitmapUtils {
         // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
         Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
-
-        if (degrees != 0) {
-            Matrix mx = new Matrix();
-            mx.postRotate(degrees);
-            return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), mx ,true);
-        }
 
         return bitmap;
     }

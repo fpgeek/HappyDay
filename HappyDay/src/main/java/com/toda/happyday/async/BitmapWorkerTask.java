@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.util.LruCache;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.ListView;
 
@@ -62,7 +63,11 @@ abstract public class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
         final ImageView imageView = imageViewReference.get();
         if (imageView != null) {
             Bitmap bitmap = createBitmap(imageView);
-            if (mPicture.getDegrees() != 0) {
+            if (mPicture.getDegrees() == 90 || mPicture.getDegrees() == 270) {
+                Matrix mx = new Matrix();
+                mx.postRotate(mPicture.getDegrees());
+                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), mx ,true);
+            } else if (mPicture.getDegrees() == 180) {
                 Matrix mx = new Matrix();
                 mx.postRotate(mPicture.getDegrees());
                 bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), mx ,true);

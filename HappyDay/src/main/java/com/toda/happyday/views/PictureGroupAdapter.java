@@ -2,8 +2,12 @@ package com.toda.happyday.views;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -30,15 +34,17 @@ import java.util.Set;
  */
 public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
 
+    private static final String TAG = "PictureGroupAdapter";
+
     private Activity mActivity;
     private List<PictureGroup> mPictureGroups;
 
     private int windowWidth = 0;
     private int windowHeight = 0;
 
-//    private static Bitmap mLoadingBitmap;
-    private static Bitmap mLoadingBitmap = null;
     private static ImageListLoader mImageListLoader;
+    private static Bitmap mLoadingBitmap;
+
     private JobManager mJobManager;
     private Set<Long> mLocationJobPictureIdSet;
 
@@ -54,9 +60,8 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
         windowWidth = metrics.widthPixels;
         windowHeight = metrics.heightPixels;
 
-//        mLoadingBitmap = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.img_loading);
-
         mImageListLoader = imageListLoader;
+        mLoadingBitmap = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.loading);
 
         mJobManager = new JobManager(getContext());
         mLocationJobPictureIdSet = new HashSet<Long>();
@@ -93,29 +98,25 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
         TextViewUtil.setText(viewHolder.dairyTextView, pictureGroup.getDairyText());
         TextViewUtil.setText(viewHolder.dateTextView, picture.getDateText());
         TextViewUtil.setText(viewHolder.locationTextView, picture.getLocation());
+        viewHolder.locationTextView.setOnClickListener( new LocationTextClickListener(mPictureGroups.get(position).getMainPicture()) );
 
         final int imageViewWidth = windowWidth / 2;
 
         {
             double ratio = 1;
-            if (picture.getDegrees() == 0) {
+            if (picture.getDegrees() == 0 || picture.getDegrees() == 180) {
                 ratio = (double)picture.getHeight() / (double)picture.getWidth();
-            } else if (picture.getDegrees() == 90) {
+            } else if (picture.getDegrees() == 90 || picture.getDegrees() == 270) {
                 ratio = (double)picture.getWidth() / (double)picture.getHeight();
             }
             viewHolder.pictureImageView.getLayoutParams().width = imageViewWidth;
             viewHolder.pictureImageView.getLayoutParams().height = (int)(ratio * (double)imageViewWidth);
         }
 
-//        ListView listView = (ListView)parent;
-
         BitmapWorkerTask bitmapWorkerTask = new PictureGroupBitmapWorkerTask(mActivity.getContentResolver(), picture, viewHolder.pictureImageView, position);
+        mImageListLoader.loadBitmap(picture, null, viewHolder.pictureImageView, bitmapWorkerTask);
 
-        if (picture.getThumbnailBitmap() == null) {
-            mImageListLoader.loadBitmap(picture, mLoadingBitmap, viewHolder.pictureImageView, bitmapWorkerTask);
-        } else {
-            mImageListLoader.loadBitmap(picture, picture.getThumbnailBitmap(), viewHolder.pictureImageView, bitmapWorkerTask);
-        }
+        Log.i(TAG, "picture loaction : " + picture.getLongitude() + ", " + picture.getLatitude());
 
         if (picture.getLocation() == null && picture.hasValidLocationInfo()) {
             mJobManager.addJobInBackground(new LocationJob(getContext(), picture, mLocationJobPictureIdSet, new LocationPostListener()));
@@ -123,6 +124,23 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
 
         return convertView;
     }
+
+    private class LocationTextClickListener implements View.OnClickListener {
+
+        private Picture mPicture;
+
+        public LocationTextClickListener(Picture picture) {
+            mPicture = picture;
+        }
+
+        @Override
+        public void onClick(View view) {
+            final String geo =  "geo:" + mPicture.getLatitude() + "," + mPicture.getLongitude();
+            Log.i("MAP", "geo : " + geo);
+            Intent intent =new Intent(Intent.ACTION_VIEW, Uri.parse(geo));
+            getContext().startActivity(intent);
+        }
+    };
 
     private class LocationPostListener implements AsyncPostExecute<String> {
 

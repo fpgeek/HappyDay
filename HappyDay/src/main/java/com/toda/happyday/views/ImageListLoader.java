@@ -5,13 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 
-import com.path.android.jobqueue.JobManager;
 import com.toda.happyday.async.BitmapWorkerTask;
-import com.toda.happyday.job.LocationJob;
 import com.toda.happyday.models.Picture;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Created by fpgeek on 2014. 2. 15..
@@ -24,7 +19,7 @@ public class ImageListLoader {
         mContext = context;
     }
 
-    public void loadBitmap(Picture picture, Bitmap thumbnailImage, ImageView imageView, BitmapWorkerTask bitmapWorkerTask) {
+    public void loadBitmap(Picture picture, Bitmap loadingBitmap, ImageView imageView, BitmapWorkerTask bitmapWorkerTask) {
         boolean isCancelWork = cancelPotentialWork(picture.getImagePath(), imageView);
 
         final Bitmap bitmap = bitmapWorkerTask.getBitmapFromMemCache(picture.getImagePath());
@@ -34,7 +29,7 @@ public class ImageListLoader {
             if (isCancelWork) {
                 final BitmapWorkerTask task = bitmapWorkerTask;
                 final BitmapWorkerTask.AsyncDrawable asyncDrawable =
-                        new BitmapWorkerTask.AsyncDrawable(mContext.getResources(), thumbnailImage, task);
+                        new BitmapWorkerTask.AsyncDrawable(mContext.getResources(), loadingBitmap, task);
                 imageView.setImageDrawable(asyncDrawable);
                 task.execute(picture.getImagePath());
             }

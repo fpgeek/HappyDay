@@ -37,6 +37,7 @@
         <activity
             android:name="com.toda.happyday.views.PictureGroupActivity"
             android:screenOrientation="portrait"
+            android:label="@string/actionbar_name"
             android:theme="@style/HappyDayMainViewTheme" >
         </activity>
         <activity

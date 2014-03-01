@@ -31,7 +31,7 @@ public class CreateThumbnailBitmapTask extends AsyncTask<Void, Void, Bitmap> {
         options.inSampleSize = 4;
         Bitmap thumbnailBitmap = MediaStore.Images.Thumbnails.getThumbnail(mContentResolver, mPicture.getId(), MediaStore.Images.Thumbnails.MINI_KIND, options);
 
-        if (mPicture.getDegrees() != 0) {
+        if (mPicture.getDegrees() == 90) {
             Matrix mx = new Matrix();
             mx.postRotate(mPicture.getDegrees());
             return Bitmap.createBitmap(thumbnailBitmap, 0, 0, thumbnailBitmap.getWidth(), thumbnailBitmap.getHeight(), mx ,true);

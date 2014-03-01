@@ -22,7 +22,6 @@ public class PictureGroupActivity extends Activity {
     private final static int REQUEST_CODE_TO_ONE_DAY_ACTIVITY = 1;
 
     private List<PictureGroup> mPictureGroups;
-    private ListView onTouchListView;
     private StaggeredGridView mGridView;
     private PictureGroupAdapter mPictureGroupAdapter;
 
@@ -68,7 +67,6 @@ public class PictureGroupActivity extends Activity {
         if (requestCode == REQUEST_CODE_TO_ONE_DAY_ACTIVITY && resultCode == OneDayActivity.RESULT_CODE_FROM_ONE_DAY_ACTIVITY) {
             PictureGroup updatedPictureGroup = data.getParcelableExtra(OneDayActivity.INTENT_EXTRA_NAME);
             updateItemView(updatedPictureGroup);
-            mPictureGroupAdapter.notifyDataSetChanged();
         }
     }
 
