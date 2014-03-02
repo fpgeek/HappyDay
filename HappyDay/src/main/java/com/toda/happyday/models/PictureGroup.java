@@ -82,6 +82,39 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
         new GetAllPictureGroupsTask(dbHelper, asyncPostExecute).execute();
     }
 
+    public static void remove(DailyInfoDbHelper dbHelper, long id) {
+        new RemovePictureGroupTask(dbHelper).execute(id);
+    }
+
+    private static class RemovePictureGroupTask extends AsyncTask<Long, Void, Boolean> {
+
+        private DailyInfoDbHelper mDbHelper;
+
+        public RemovePictureGroupTask(DailyInfoDbHelper dbHelper) {
+            mDbHelper = dbHelper;
+        }
+
+        @Override
+        protected Boolean doInBackground(Long... longs) {
+            final long id = longs[0];
+
+            SQLiteDatabase db = mDbHelper.getWritableDatabase();
+            if (db == null) { return null; }
+
+            String selection = DailyInfo.DailyEntry._ID + " = ?";
+            String[] selectionArgs = { String.valueOf(id) };
+
+            int count = db.delete(
+                    DailyInfo.DailyEntry.TABLE_NAME,
+                    selection,
+                    selectionArgs
+            );
+            db.close();
+
+            return count == 1;
+        }
+    }
+
     private static class GetAllPictureGroupsTask extends AsyncTask<Void, Void, List<PictureGroup>> {
 
         private DailyInfoDbHelper mDbHelper;
@@ -104,6 +137,7 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
                 pictureGroupList.add(pictureGroup);
             }
             cursor.close();
+            db.close();
             return pictureGroupList;
         }
 

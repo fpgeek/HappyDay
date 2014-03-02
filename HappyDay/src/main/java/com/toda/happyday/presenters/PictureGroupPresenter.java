@@ -80,19 +80,7 @@ public class PictureGroupPresenter {
                 }
             }
 
-            // TODO - 삭제된 이미지들을 가지고 있던 picture group 제거하기
-            List<PictureGroup> emptyPictureGroup = new ArrayList<PictureGroup>();
-            for (PictureGroup pictureGroup : pictureGroupList) {
-                if (pictureGroup.isEmpty()) {
-                    emptyPictureGroup.add(pictureGroup);
-                } else {
-                    pictureGroup.selectMainPicture();
-                }
-            }
-
-            for (PictureGroup pictureGroup : emptyPictureGroup) {
-                pictureGroupList.remove(pictureGroup);
-            }
+            removeEmptyPictureGroups(pictureGroupList);
 
             Collections.sort(pictureGroupList, new PictureGroupCompare());
 
@@ -103,6 +91,23 @@ public class PictureGroupPresenter {
 //            mPictureGroupActivity.setPictureGroups(pictureGroupList);
         }
     };
+
+    private void removeEmptyPictureGroups(List<PictureGroup> pictureGroupList) {
+
+        List<PictureGroup> emptyPictureGroup = new ArrayList<PictureGroup>();
+        for (PictureGroup pictureGroup : pictureGroupList) {
+            if (pictureGroup.isEmpty()) {
+                emptyPictureGroup.add(pictureGroup);
+            } else {
+                pictureGroup.selectMainPicture();
+            }
+        }
+
+        for (PictureGroup pictureGroup : emptyPictureGroup) {
+            pictureGroupList.remove(pictureGroup);
+            PictureGroup.remove(mDbHelper, pictureGroup.getId());
+        }
+    }
 
 
     public void loadPictureGroups() {
