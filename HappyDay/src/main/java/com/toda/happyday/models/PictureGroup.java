@@ -178,7 +178,13 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
         );
         db.close();
 
-        return get(dbHelper, id);
+        if (id == -1) {
+            return null;
+        }
+
+        PictureGroup newPictureGroup = new PictureGroup();
+        newPictureGroup.setId(id);
+        return newPictureGroup;
     }
 
     public static PictureGroup get_or_create(DailyInfoDbHelper dbHelper, final long id) {

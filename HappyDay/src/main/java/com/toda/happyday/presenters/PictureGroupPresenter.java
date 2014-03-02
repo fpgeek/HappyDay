@@ -68,10 +68,12 @@ public class PictureGroupPresenter {
 
             SharedPreferences sharedPreferences = mActivity.getSharedPreferences(mActivity.getString(R.string.preference_picture_info_key), Context.MODE_PRIVATE);
 
+            List<PictureGroup> newCreatedPictureGroups = new ArrayList<PictureGroup>();
             for (List<Picture> picturesGroupByTime : pictureGroupListGroupByTimes) {
                 final long pictureGroupId = getPictureGroupId(sharedPreferences, picturesGroupByTime);
                 if (pictureGroupId == -1) {
-                    PictureGroup pictureGroup = newCreatePictureGroup(sharedPreferences, picturesGroupByTime);
+                    PictureGroup pictureGroup = PictureGroup.create(mDbHelper);
+                    newCreatedPictureGroups.add(pictureGroup);
                     pictureGroup.addAll(picturesGroupByTime);
                     pictureGroupList.add(pictureGroup);
                 } else {
@@ -80,6 +82,7 @@ public class PictureGroupPresenter {
                 }
             }
 
+            insertPictureGroupToPictureInfo(sharedPreferences, newCreatedPictureGroups);
             removeEmptyPictureGroups(pictureGroupList);
 
             Collections.sort(pictureGroupList, new PictureGroupCompare());
@@ -87,10 +90,18 @@ public class PictureGroupPresenter {
             Intent intent = new Intent(mActivity, PictureGroupActivity.class);
             intent.putParcelableArrayListExtra(mActivity.getString(R.string.EXTRA_PICTURE_GROUP_LIST), new ArrayList<PictureGroup>(pictureGroupList));
             mActivity.startActivity(intent);
-
-//            mPictureGroupActivity.setPictureGroups(pictureGroupList);
         }
     };
+
+    private void insertPictureGroupToPictureInfo(SharedPreferences sharedPreferences, List<PictureGroup> newCreatedPictureGroups) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        for (PictureGroup pictureGroup : newCreatedPictureGroups) {
+            for (Picture picture : pictureGroup) {
+                editor.putLong(String.valueOf(picture.getId()), pictureGroup.getId());
+            }
+        }
+        editor.commit();
+    }
 
     private void removeEmptyPictureGroups(List<PictureGroup> pictureGroupList) {
 
@@ -112,16 +123,6 @@ public class PictureGroupPresenter {
 
     public void loadPictureGroups() {
         Picture.all(mActivity, mOnPostGetPictureList);
-    }
-
-    private PictureGroup newCreatePictureGroup(SharedPreferences sharedPreferences, List<Picture> picturesGroupByTime) {
-        PictureGroup pictureGroup = PictureGroup.create(mDbHelper);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        for (Picture picture : picturesGroupByTime) {
-            editor.putLong(String.valueOf(picture.getId()), pictureGroup.getId());
-        }
-        editor.commit();
-        return pictureGroup;
     }
 
     private List<List<Picture>> pictureListToListGroupByTime(List<Picture> pictureList) {

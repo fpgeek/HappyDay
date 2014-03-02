@@ -38,6 +38,10 @@ public class CreateDailyInfoAsyncTask extends AsyncTask<Void, Void, Boolean> {
                 DailyInfo.DailyEntry.COLUMN_NAME_NULLABLE,
                 values
         );
+        if (newRowId == -1) {
+            return false;
+        }
+
         pictureGroup.setId(newRowId);
 
         SharedPreferences.Editor editor = sharedPreferences.edit();

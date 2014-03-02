@@ -16,6 +16,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.path.android.jobqueue.JobManager;
+import com.path.android.jobqueue.network.NetworkUtil;
+import com.path.android.jobqueue.network.NetworkUtilImpl;
 import com.toda.happyday.R;
 import com.toda.happyday.async.AsyncPostExecute;
 import com.toda.happyday.async.BitmapWorkerTask;
@@ -48,6 +50,8 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
     private JobManager mJobManager;
     private Set<Long> mLocationJobPictureIdSet;
 
+    private static NetworkUtil mNetworkUtil;
+
     public PictureGroupAdapter(Activity activity, List<PictureGroup> pictureGroups, ImageListLoader imageListLoader) {
         super(activity, R.layout.picture_group_item, pictureGroups);
         this.mActivity = activity;
@@ -62,6 +66,8 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
 
         mImageListLoader = imageListLoader;
         mLoadingBitmap = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.loading);
+
+        mNetworkUtil = new NetworkUtilImpl(getContext());
 
         mJobManager = new JobManager(getContext());
         mLocationJobPictureIdSet = new HashSet<Long>();
@@ -126,7 +132,7 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
         BitmapWorkerTask bitmapWorkerTask = new PictureGroupBitmapWorkerTask(mActivity.getContentResolver(), picture, viewHolder.pictureImageView, position, CACHE_NAME);
         mImageListLoader.loadBitmap(picture, null, viewHolder.pictureImageView, bitmapWorkerTask, CACHE_NAME);
 
-        if (picture.getLocation() == null && picture.hasValidLocationInfo()) {
+        if (mNetworkUtil.isConnected(getContext()) && picture.getLocation() == null && picture.hasValidLocationInfo()) {
             mJobManager.addJobInBackground(new LocationJob(getContext(), picture, mLocationJobPictureIdSet, new LocationPostListener()));
         }
 

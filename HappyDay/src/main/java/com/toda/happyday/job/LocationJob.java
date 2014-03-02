@@ -1,6 +1,8 @@
 package com.toda.happyday.job;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -126,8 +128,8 @@ public class LocationJob extends Job {
     private static JSONObject executeHttpGet(String uri) throws Exception {
         HttpGet req = new HttpGet(uri);
         HttpParams httpParameters = new BasicHttpParams();
-        HttpConnectionParams.setConnectionTimeout(httpParameters, 10000);
-        HttpConnectionParams.setSoTimeout(httpParameters, 15000);
+        HttpConnectionParams.setConnectionTimeout(httpParameters, 3000);
+        HttpConnectionParams.setSoTimeout(httpParameters, 5000);
 
         DefaultHttpClient client = new DefaultHttpClient();
         client.setParams(httpParameters);
