@@ -187,9 +187,6 @@ public class OneDayActivity extends FragmentActivity {
             mDairyTextView = (TextView) mHeaderView.findViewById(R.id.dairy_text);
             TextViewUtil.setText(mDairyTextView, mPictureGroup.getDairyText());
 
-//            mDateTextView = (TextView) mHeaderView.findViewById(R.id.date_text);
-//            mDateTextView.setText(mPictureGroup.getMainPicture().getDateText());
-
             mStickerViewPager = (ViewPager)rootView.findViewById(R.id.sticker_view_pager);
             mStickerCollectionPagerAdapter = new StickerCollectionPagerAdapter( ((FragmentActivity)getActivity()).getSupportFragmentManager() );
             mStickerViewPager.setAdapter(mStickerCollectionPagerAdapter);
@@ -305,7 +302,12 @@ public class OneDayActivity extends FragmentActivity {
 
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-            new SaveStickerTask(placeholderFragment.getPictureGroup().getId()).execute(STICKER_IMAGE_IDS[i + (imageIndex * STICKER_COUNT_PER_SCREEN)]);
+            final int sticker = STICKER_IMAGE_IDS[i + (imageIndex * STICKER_COUNT_PER_SCREEN)];
+            if (sticker == R.drawable.sticker_10) {
+                new SaveStickerTask(placeholderFragment.getPictureGroup().getId()).execute(0);
+            } else {
+                new SaveStickerTask(placeholderFragment.getPictureGroup().getId()).execute(sticker);
+            }
         }
     }
 
@@ -348,7 +350,12 @@ public class OneDayActivity extends FragmentActivity {
                 placeholderFragment.getPictureGroup().setSticker(stickerImageId);
                 ActionBar actionBar = getActionBar();
                 if (actionBar != null) {
-                    actionBar.setIcon(stickerImageId);
+                    if (stickerImageId == 0) {
+                        actionBar.setDisplayShowHomeEnabled(false);
+                    } else {
+                        actionBar.setDisplayShowHomeEnabled(true);
+                        actionBar.setIcon(stickerImageId);
+                    }
                 }
                 closeStickerView();
             }
