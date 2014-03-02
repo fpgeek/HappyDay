@@ -28,9 +28,7 @@ public class PictureGroupBitmapWorkerTask extends BitmapWorkerTask {
         if (mPicture.getType() == Picture.TYPE_IMAGE) {
             return MediaStore.Images.Thumbnails.getThumbnail(mContentResolver, mPicture.getId(), MediaStore.Images.Thumbnails.MINI_KIND, null);
         } else {
-            MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
-            metaRetriever.setDataSource(mPicture.getFilePath());
-            return metaRetriever.getFrameAtTime(0);
+            return MediaStore.Video.Thumbnails.getThumbnail(mContentResolver, mPicture.getId(), MediaStore.Video.Thumbnails.MINI_KIND, null);
         }
     }
 }
