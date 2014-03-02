@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 
-import com.google.android.gms.internal.em;
 import com.toda.happyday.async.AsyncPostExecute;
 import com.toda.happyday.views.PictureGroupActivity;
 import com.toda.happyday.R;
@@ -39,11 +38,20 @@ public class PictureGroupPresenter {
         @Override
         public void onPostExecute(List<Picture> pictureList) {
             mPictureList = pictureList;
+            Collections.sort(mPictureList, new PictureCompare());
             PictureGroup.all(mDbHelper, mOnPostGetPictureGroupList);
         }
     };
 
-    private static class PictureDateCompare implements Comparator<PictureGroup> {
+    private static class PictureCompare implements Comparator<Picture> {
+
+        @Override
+        public int compare(Picture picture, Picture picture2) {
+            return picture.getDate().compareTo(picture2.getDate());
+        }
+    };
+
+    private static class PictureGroupCompare implements Comparator<PictureGroup> {
 
         @Override
         public int compare(PictureGroup pictureGroup, PictureGroup pictureGroup2) {
@@ -86,7 +94,7 @@ public class PictureGroupPresenter {
                 pictureGroupList.remove(pictureGroup);
             }
 
-            Collections.sort(pictureGroupList, new PictureDateCompare());
+            Collections.sort(pictureGroupList, new PictureGroupCompare());
 
             Intent intent = new Intent(mActivity, PictureGroupActivity.class);
             intent.putParcelableArrayListExtra(mActivity.getString(R.string.EXTRA_PICTURE_GROUP_LIST), new ArrayList<PictureGroup>(pictureGroupList));
