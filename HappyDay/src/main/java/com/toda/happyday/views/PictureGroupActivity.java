@@ -1,7 +1,9 @@
 package com.toda.happyday.views;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.View;
@@ -11,6 +13,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.etsy.android.grid.StaggeredGridView;
+import com.google.android.gms.internal.ac;
 import com.toda.happyday.R;
 import com.toda.happyday.models.PictureGroup;
 import com.toda.happyday.utils.TextViewUtil;
@@ -35,6 +38,8 @@ public class PictureGroupActivity extends Activity {
 
         setContentView(R.layout.picture_group_list);
 
+        initActionBar();
+
         List<PictureGroup> pictureGroups = getIntent().getParcelableArrayListExtra(getString(R.string.EXTRA_PICTURE_GROUP_LIST));
         mPictureGroups = pictureGroups;
 
@@ -45,6 +50,22 @@ public class PictureGroupActivity extends Activity {
 
         mPictureGroupAdapter = new PictureGroupAdapter(this, pictureGroups, mImageListLoader);
         mGridView.setAdapter(mPictureGroupAdapter);
+    }
+
+    private void initActionBar() {
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            int titleId = getResources().getIdentifier("action_bar_title", "id", "android");
+            if (titleId == 0) { return; }
+
+            TextView titleTextView = (TextView) findViewById(titleId);
+            if (titleTextView == null) { return; }
+
+            Typeface typeface = Typeface.createFromAsset(getAssets(), "fonts/NanumPen.ttf");
+            if (typeface == null) { return; }
+
+            titleTextView.setTypeface(typeface);
+        }
     }
 
     AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
