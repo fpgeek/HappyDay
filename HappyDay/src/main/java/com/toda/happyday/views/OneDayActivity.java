@@ -338,6 +338,7 @@ public class OneDayActivity extends FragmentActivity {
                     selection,
                     selectionArgs
             );
+            db.close();
 
             return count == 1;
         }

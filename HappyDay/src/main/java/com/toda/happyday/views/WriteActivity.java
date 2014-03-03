@@ -94,6 +94,8 @@ public class WriteActivity extends Activity {
                     selectionArgs
             );
 
+            db.close();
+
             return count == 1;
         }
 

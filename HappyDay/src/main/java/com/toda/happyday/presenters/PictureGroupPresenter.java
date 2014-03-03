@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 
 import com.toda.happyday.async.AsyncPostExecute;
 import com.toda.happyday.views.PictureGroupActivity;
@@ -68,11 +69,13 @@ public class PictureGroupPresenter {
 
             SharedPreferences sharedPreferences = mActivity.getSharedPreferences(mActivity.getString(R.string.preference_picture_info_key), Context.MODE_PRIVATE);
 
+            SQLiteDatabase writableDb = mDbHelper.getWritableDatabase();
+
             List<PictureGroup> newCreatedPictureGroups = new ArrayList<PictureGroup>();
             for (List<Picture> picturesGroupByTime : pictureGroupListGroupByTimes) {
                 final long pictureGroupId = getPictureGroupId(sharedPreferences, picturesGroupByTime);
                 if (pictureGroupId == -1) {
-                    PictureGroup pictureGroup = PictureGroup.create(mDbHelper);
+                    PictureGroup pictureGroup = PictureGroup.create(writableDb);
                     newCreatedPictureGroups.add(pictureGroup);
                     pictureGroup.addAll(picturesGroupByTime);
                     pictureGroupList.add(pictureGroup);
@@ -80,6 +83,10 @@ public class PictureGroupPresenter {
                     PictureGroup pictureGroup = pictureGroupHashMap.get(pictureGroupId);
                     pictureGroup.addAll(picturesGroupByTime);
                 }
+            }
+
+            if (writableDb != null) {
+                writableDb.close();
             }
 
             insertPictureGroupToPictureInfo(sharedPreferences, newCreatedPictureGroups);
@@ -110,7 +117,7 @@ public class PictureGroupPresenter {
             if (pictureGroup.isEmpty()) {
                 emptyPictureGroup.add(pictureGroup);
             } else {
-                pictureGroup.selectMainPicture();
+                pictureGroup.selectMainPicture(); // TODO - 밖으로 빼기
             }
         }
 

@@ -79,7 +79,7 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
     }
 
     public static void all(DailyInfoDbHelper dbHelper, AsyncPostExecute<List<PictureGroup>> asyncPostExecute) {
-        new GetAllPictureGroupsTask(dbHelper, asyncPostExecute).execute();
+        new GetAllPictureGroupsTask(dbHelper.getReadableDatabase(), asyncPostExecute).execute();
     }
 
     public static void remove(DailyInfoDbHelper dbHelper, long id) {
@@ -117,27 +117,25 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
 
     private static class GetAllPictureGroupsTask extends AsyncTask<Void, Void, List<PictureGroup>> {
 
-        private DailyInfoDbHelper mDbHelper;
+        private SQLiteDatabase mDb;
         private AsyncPostExecute<List<PictureGroup>> mAsyncPostExecute;
 
-        public GetAllPictureGroupsTask(DailyInfoDbHelper dbHelper, AsyncPostExecute<List<PictureGroup>> asyncPostExecute) {
-            mDbHelper = dbHelper;
+        public GetAllPictureGroupsTask(SQLiteDatabase db, AsyncPostExecute<List<PictureGroup>> asyncPostExecute) {
+            mDb = db;
             mAsyncPostExecute = asyncPostExecute;
         }
 
         @Override
         protected List<PictureGroup> doInBackground(Void... voids) {
-            SQLiteDatabase db = mDbHelper.getReadableDatabase();
-            if (db == null) { return null; }
+            if (mDb == null) { return null; }
 
-            Cursor cursor = getCursor(db, null, null, DailyInfo.DailyEntry._ID + " ASC");
+            Cursor cursor = getCursor(mDb, null, null, DailyInfo.DailyEntry._ID + " ASC");
             List<PictureGroup> pictureGroupList = new ArrayList<PictureGroup>(cursor.getCount());
             while(cursor.moveToNext()) {
                 PictureGroup pictureGroup = createPictureGroup(cursor);
                 pictureGroupList.add(pictureGroup);
             }
             cursor.close();
-            db.close();
             return pictureGroupList;
         }
 
@@ -147,8 +145,7 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
         }
     }
 
-    public static PictureGroup get(DailyInfoDbHelper dbHelper, final long id) {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
+    public static PictureGroup get(SQLiteDatabase db, final long id) {
         if (db == null) { return null; }
 
         String selection = DailyInfo.DailyEntry._ID + " = ?";
@@ -158,12 +155,10 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
         cursor.moveToNext();
         PictureGroup pictureGroup = createPictureGroup(cursor);
         cursor.close();
-        db.close();
         return pictureGroup;
     }
 
-    public static PictureGroup create(DailyInfoDbHelper dbHelper) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
+    public static PictureGroup create(SQLiteDatabase db) {
         if (db == null) { return null; }
 
         ContentValues values = new ContentValues();
@@ -176,7 +171,6 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
                 DailyInfo.DailyEntry.COLUMN_NAME_NULLABLE,
                 values
         );
-        db.close();
 
         if (id == -1) {
             return null;
@@ -187,15 +181,15 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
         return newPictureGroup;
     }
 
-    public static PictureGroup get_or_create(DailyInfoDbHelper dbHelper, final long id) {
-        PictureGroup pictureGroup = get(dbHelper, id);
-        if (pictureGroup != null) { return pictureGroup; }
+//    public static PictureGroup get_or_create(DailyInfoDbHelper dbHelper, final long id) {
+//        PictureGroup pictureGroup = get(dbHelper, id);
+//        if (pictureGroup != null) { return pictureGroup; }
+//
+//        return create(dbHelper);
+//    }
 
-        return create(dbHelper);
-    }
-
-    public static boolean update(DailyInfoDbHelper dbHelper, final long id) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
+    public static boolean update(SQLiteDatabase db, final long id) {
+//        SQLiteDatabase db = dbHelper.getWritableDatabase();
         if (db == null) { return false; }
 
         ContentValues values = new ContentValues();
