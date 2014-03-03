@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.path.android.jobqueue.JobManager;
@@ -25,6 +26,7 @@ import com.toda.happyday.async.PictureGroupBitmapWorkerTask;
 import com.toda.happyday.job.LocationJob;
 import com.toda.happyday.models.PictureGroup;
 import com.toda.happyday.models.Picture;
+import com.toda.happyday.presenters.PictureGroupPresenter;
 import com.toda.happyday.utils.TextViewUtil;
 
 import java.util.HashSet;
@@ -51,12 +53,15 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
     private Set<Long> mLocationJobPictureIdSet;
 
     private static NetworkUtil mNetworkUtil;
+    private boolean mHasMorePicture = true;
+    private PictureGroupPresenter mPictureGroupPresenter;
 
     public PictureGroupAdapter(Activity activity, List<PictureGroup> pictureGroups, ImageListLoader imageListLoader) {
         super(activity, R.layout.picture_group_item, pictureGroups);
         this.mActivity = activity;
 
         this.mPictureGroups = pictureGroups;
+        this.mPictureGroupPresenter = new PictureGroupPresenter(mActivity);
 
         DisplayMetrics metrics = new DisplayMetrics();
         ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(metrics);
@@ -136,7 +141,20 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
             mJobManager.addJobInBackground(new LocationJob(getContext(), picture, mLocationJobPictureIdSet, new LocationPostListener()));
         }
 
+        if (mHasMorePicture && isLastPictureGroup(position)) {
+
+            if (!mPictureGroupPresenter.isPictureEmpty()) {
+                mPictureGroupPresenter.continueLoadPictureGroups(this);
+            } else {
+                mHasMorePicture = false;
+            }
+        }
+
         return convertView;
+    }
+
+    private boolean isLastPictureGroup(int position) {
+        return position + 1 == mPictureGroups.size();
     }
 
     private class LocationTextClickListener implements View.OnClickListener {

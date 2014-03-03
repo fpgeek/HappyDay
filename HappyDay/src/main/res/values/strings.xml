@@ -24,4 +24,5 @@
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="title_activity_happy_day">HappyDayActivity</string>
     <string name="write">글쓰기</string>
+    <string name="EXTRA_LAST_LOAD_DATE_TIME">LastLoadDateValue</string>
 </resources>

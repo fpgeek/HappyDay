@@ -1,5 +1,6 @@
 package com.toda.happyday.models;
 
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -70,8 +71,8 @@ public class Picture implements Parcelable {
             MediaStore.Video.Media.IS_PRIVATE
     };
 
-    private final static String DB_IMAGE_DATE_ORDER = MediaStore.Images.Media.DATE_TAKEN + " ASC";
-    private final static String DB_VIDEO_DATE_ORDER = MediaStore.Video.VideoColumns.DATE_TAKEN + " ASC";
+    private final static String DB_IMAGE_DATE_ORDER = MediaStore.Images.Media.DATE_TAKEN + " DESC";
+    private final static String DB_VIDEO_DATE_ORDER = MediaStore.Video.VideoColumns.DATE_TAKEN + " DESC";
 
     private final static String MONTH_ENG_LIST[] = {
         "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
@@ -84,19 +85,15 @@ public class Picture implements Parcelable {
         readFromParcel(parcel);
     }
 
-    public static void all(Context context, AsyncPostExecute<List<Picture>> asyncPostExecute) {
-        new GetAllPicturesTask(context, asyncPostExecute).execute();
-    }
-
     public static void updateLocation(Context context, long pictureId, String location) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(context.getString(R.string.preference_picture_to_location_key), Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = context.getSharedPreferences(context.getString(R.string.preference_picture_to_location_key), Context.MODE_MULTI_PROCESS);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(String.valueOf(pictureId), location);
         editor.commit();
     }
 
     private static String getLocationFromDb(Context context, long pictureId) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(context.getString(R.string.preference_picture_to_location_key), Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = context.getSharedPreferences(context.getString(R.string.preference_picture_to_location_key), Context.MODE_MULTI_PROCESS);
         return sharedPreferences.getString(String.valueOf(pictureId), null);
     }
 
@@ -134,34 +131,41 @@ public class Picture implements Parcelable {
         this.location = location;
     }
 
-    private static class GetAllPicturesTask extends AsyncTask<Void, Void, List<Picture>> {
+    public static void getList(Context context, AsyncPostExecute<List<Picture>> asyncPostExecute, long lastLoadDateValue, int limitCountPerLoad) {
+        new GetPicturesTask(context, asyncPostExecute, lastLoadDateValue, limitCountPerLoad).execute();
+    }
+
+    private static class GetPicturesTask extends AsyncTask<Void, Void, List<Picture>> {
 
         private Context mContext;
-
         private AsyncPostExecute<List<Picture>> mAsyncPostExecute;
+        private long mlastLoadDateValue;
+        private int mLimitCountPerLoad;
 
-        public GetAllPicturesTask(Context context, AsyncPostExecute<List<Picture>> asyncPostExecute) {
+        public GetPicturesTask(Context context, AsyncPostExecute<List<Picture>> asyncPostExecute, long lastLoadDateValue, int limitCountPerLoad) {
             mContext = context;
             mAsyncPostExecute = asyncPostExecute;
+            mlastLoadDateValue = lastLoadDateValue;
+            mLimitCountPerLoad = limitCountPerLoad;
         }
 
         @Override
         protected List<Picture> doInBackground(Void... voids) {
             List<Picture> pictureList = new ArrayList<Picture>();
 
-            Cursor imageCursor = getAllImageCursor(mContext.getContentResolver());
+            Cursor imageCursor = getLimitImageCursor(mContext.getContentResolver(), mlastLoadDateValue, mLimitCountPerLoad);
             while(imageCursor.moveToNext()) {
                 Picture picture = createImagePicture(mContext, imageCursor);
                 pictureList.add(picture);
             }
             imageCursor.close();
 
-            Cursor videoCursor = getAllVideoCursor(mContext.getContentResolver());
+            Cursor videoCursor = getLimitVideoCursor(mContext.getContentResolver(), mlastLoadDateValue, mLimitCountPerLoad);
             while(videoCursor.moveToNext()) {
                 Picture picture = createVideoPicture(mContext, videoCursor);
                 pictureList.add(picture);
             }
-            imageCursor.close();
+            videoCursor.close();
 
             return pictureList;
         }
@@ -172,12 +176,16 @@ public class Picture implements Parcelable {
         }
     }
 
-    private static Cursor getAllImageCursor(ContentResolver contentResolver) {
-        return getImageCursor(contentResolver, null, null, DB_IMAGE_DATE_ORDER);
+    private static Cursor getLimitImageCursor(ContentResolver contentResolver, long lastLoadDateValue, int limitCountPerLoad) {
+        final String selection = MediaStore.Images.Media.DATE_TAKEN + " < " + lastLoadDateValue;
+        final String[] selectionArgs = null;
+        return getImageCursor(contentResolver, selection, selectionArgs, DB_IMAGE_DATE_ORDER + " limit " + limitCountPerLoad);
     }
 
-    private static Cursor getAllVideoCursor(ContentResolver contentResolver) {
-        return getVideoCursor(contentResolver, null, null, DB_VIDEO_DATE_ORDER);
+    private static Cursor getLimitVideoCursor(ContentResolver contentResolver, long lastLoadDateValue, int limitCountPerLoad) {
+        final String selection = MediaStore.Video.Media.DATE_TAKEN + " < " + lastLoadDateValue;
+        final String[] selectionArgs = null;
+        return getVideoCursor(contentResolver, selection, selectionArgs, DB_VIDEO_DATE_ORDER + " limit " + limitCountPerLoad);
     }
 
     private static Cursor getImageCursor(ContentResolver contentResolver, final String selection, final String[] selectionArgs, final String sortOrder) {

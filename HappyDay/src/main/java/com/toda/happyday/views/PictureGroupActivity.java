@@ -2,7 +2,10 @@ package com.toda.happyday.views;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.LoaderManager;
 import android.content.Intent;
+import android.content.Loader;
+import android.database.Cursor;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -16,15 +19,18 @@ import com.etsy.android.grid.StaggeredGridView;
 import com.google.android.gms.internal.ac;
 import com.toda.happyday.R;
 import com.toda.happyday.models.PictureGroup;
+import com.toda.happyday.presenters.PictureGroupPresenter;
 import com.toda.happyday.utils.TextViewUtil;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class PictureGroupActivity extends Activity {
 
     private final static int REQUEST_CODE_TO_ONE_DAY_ACTIVITY = 1;
 
-    private List<PictureGroup> mPictureGroups;
+    private List<PictureGroup> mPictureGroups = new ArrayList<PictureGroup>();
     private StaggeredGridView mGridView;
     private PictureGroupAdapter mPictureGroupAdapter;
 
@@ -35,21 +41,27 @@ public class PictureGroupActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.picture_group_list);
 
         initActionBar();
 
-        List<PictureGroup> pictureGroups = getIntent().getParcelableArrayListExtra(getString(R.string.EXTRA_PICTURE_GROUP_LIST));
-        mPictureGroups = pictureGroups;
+//        List<PictureGroup> pictureGroups = getIntent().getParcelableArrayListExtra(getString(R.string.EXTRA_PICTURE_GROUP_LIST));
+//        mPictureGroups = pictureGroups;
+//        final long lastLoadDateTime = getIntent().getLongExtra(getString(R.string.EXTRA_LAST_LOAD_DATE_TIME), new Date().getTime());
 
         mImageListLoader = new ImageListLoader(this);
 
         mGridView = (StaggeredGridView)findViewById(R.id.grid_view);
+
+        View loadingProgressView = getLayoutInflater().inflate(R.layout.loading_progress, null);
+        mGridView.addFooterView(loadingProgressView);
         mGridView.setOnItemClickListener(itemClickListener);
 
-        mPictureGroupAdapter = new PictureGroupAdapter(this, pictureGroups, mImageListLoader);
+        mPictureGroupAdapter = new PictureGroupAdapter(this, mPictureGroups, mImageListLoader);
         mGridView.setAdapter(mPictureGroupAdapter);
+
+        PictureGroupPresenter pr = new PictureGroupPresenter(this);
+        pr.continueLoadPictureGroups(mPictureGroupAdapter);
     }
 
     private void initActionBar() {

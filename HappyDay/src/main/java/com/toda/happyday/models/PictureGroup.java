@@ -131,13 +131,15 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
             if (db == null) { return null; }
 
             Cursor cursor = getCursor(db, null, null, DailyInfo.DailyEntry._ID + " ASC");
-            List<PictureGroup> pictureGroupList = new ArrayList<PictureGroup>(cursor.getCount());
+            List<PictureGroup> pictureGroupList = new ArrayList<PictureGroup>();
+
             while(cursor.moveToNext()) {
                 PictureGroup pictureGroup = createPictureGroup(cursor);
                 pictureGroupList.add(pictureGroup);
             }
+
             cursor.close();
-            db.close();
+//            db.close();
             return pictureGroupList;
         }
 
@@ -182,9 +184,11 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
             return null;
         }
 
-        PictureGroup newPictureGroup = new PictureGroup();
-        newPictureGroup.setId(id);
-        return newPictureGroup;
+        return PictureGroup.get(dbHelper, id);
+
+//        PictureGroup newPictureGroup = new PictureGroup();
+//        newPictureGroup.setId(id);
+//        return newPictureGroup;
     }
 
     public static PictureGroup get_or_create(DailyInfoDbHelper dbHelper, final long id) {

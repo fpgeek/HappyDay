@@ -42,6 +42,7 @@ public class LocationJob extends Job {
     private static final String FOURSQUARE_VERSION = "20140101";
     private static final String FOURSQUARE_LIMIT = "1";
 
+    private static final int LOCATION_WORKER_LIMIT_SIZE = 5;
     private WeakReference<Context> mWeakRefContext;
     private Picture mPicture;
     private Set<Long> mLocationJobPictureIdSet;
@@ -61,7 +62,10 @@ public class LocationJob extends Job {
 
     @Override
     public void onRun() throws Throwable {
-        if (!mLocationJobPictureIdSet.contains(mPicture.getId()) && mPicture.getLocation() == null) {
+        if (mLocationJobPictureIdSet.size() <= LOCATION_WORKER_LIMIT_SIZE
+                && !mLocationJobPictureIdSet.contains(mPicture.getId())
+                && mPicture.getLocation() == null) {
+
             mLocationJobPictureIdSet.add(mPicture.getId());
             if (mPicture.hasValidLocationInfo()) {
                 String location = getLocationFromFoursquare(mPicture.getLatitude(), mPicture.getLongitude());
