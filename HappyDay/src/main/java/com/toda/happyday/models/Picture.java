@@ -70,8 +70,8 @@ public class Picture implements Parcelable {
             MediaStore.Video.Media.IS_PRIVATE
     };
 
-    private final static String DB_IMAGE_DATE_ORDER = MediaStore.Images.Media.DATE_TAKEN + " ASC";
-    private final static String DB_VIDEO_DATE_ORDER = MediaStore.Video.VideoColumns.DATE_TAKEN + " ASC";
+    private final static String DB_IMAGE_DATE_ORDER = MediaStore.Images.Media.DATE_TAKEN + " DESC";
+    private final static String DB_VIDEO_DATE_ORDER = MediaStore.Video.VideoColumns.DATE_TAKEN + " DESC";
 
     private final static String MONTH_ENG_LIST[] = {
         "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
@@ -84,8 +84,8 @@ public class Picture implements Parcelable {
         readFromParcel(parcel);
     }
 
-    public static void all(Context context, AsyncPostExecute<List<Picture>> asyncPostExecute) {
-        new GetAllPicturesTask(context, asyncPostExecute).execute();
+    public static void all(Context context, int loadCount, long lastLoadDateValue, AsyncPostExecute<List<Picture>> asyncPostExecute) {
+        new GetAllPicturesTask(context, lastLoadDateValue, asyncPostExecute).execute(loadCount);
     }
 
     public static void updateLocation(Context context, long pictureId, String location) {
@@ -134,29 +134,32 @@ public class Picture implements Parcelable {
         this.location = location;
     }
 
-    private static class GetAllPicturesTask extends AsyncTask<Void, Void, List<Picture>> {
+    private static class GetAllPicturesTask extends AsyncTask<Integer, Void, List<Picture>> {
 
         private Context mContext;
-
+        private long mLastLoadDateValue;
         private AsyncPostExecute<List<Picture>> mAsyncPostExecute;
 
-        public GetAllPicturesTask(Context context, AsyncPostExecute<List<Picture>> asyncPostExecute) {
+        public GetAllPicturesTask(Context context, long lastLoadDateValue, AsyncPostExecute<List<Picture>> asyncPostExecute) {
             mContext = context;
+            mLastLoadDateValue = lastLoadDateValue;
             mAsyncPostExecute = asyncPostExecute;
         }
 
         @Override
-        protected List<Picture> doInBackground(Void... voids) {
+        protected List<Picture> doInBackground(Integer... integers) {
+            final int loadCount = integers[0];
+
             List<Picture> pictureList = new ArrayList<Picture>();
 
-            Cursor imageCursor = getAllImageCursor(mContext.getContentResolver());
+            Cursor imageCursor = getAllImageCursor(mContext.getContentResolver(), loadCount, mLastLoadDateValue);
             while(imageCursor.moveToNext()) {
                 Picture picture = createImagePicture(mContext, imageCursor);
                 pictureList.add(picture);
             }
             imageCursor.close();
 
-            Cursor videoCursor = getAllVideoCursor(mContext.getContentResolver());
+            Cursor videoCursor = getAllVideoCursor(mContext.getContentResolver(), loadCount, mLastLoadDateValue);
             while(videoCursor.moveToNext()) {
                 Picture picture = createVideoPicture(mContext, videoCursor);
                 pictureList.add(picture);
@@ -172,12 +175,16 @@ public class Picture implements Parcelable {
         }
     }
 
-    private static Cursor getAllImageCursor(ContentResolver contentResolver) {
-        return getImageCursor(contentResolver, null, null, DB_IMAGE_DATE_ORDER);
+    private static Cursor getAllImageCursor(ContentResolver contentResolver, int loadCount, long lastLoadDateValue) {
+        final String selection = MediaStore.Images.Media.DATE_TAKEN + " < ?";
+        final String[] selectionArgs = {String.valueOf(lastLoadDateValue)};
+        return getImageCursor(contentResolver, selection, selectionArgs, DB_IMAGE_DATE_ORDER + " limit " + loadCount);
     }
 
-    private static Cursor getAllVideoCursor(ContentResolver contentResolver) {
-        return getVideoCursor(contentResolver, null, null, DB_VIDEO_DATE_ORDER);
+    private static Cursor getAllVideoCursor(ContentResolver contentResolver, int loadCount, long lastLoadDateValue) {
+        final String selection = MediaStore.Video.Media.DATE_TAKEN + " < ?";
+        final String[] selectionArgs = {String.valueOf(lastLoadDateValue)};
+        return getVideoCursor(contentResolver, selection, selectionArgs, DB_VIDEO_DATE_ORDER + " limit " + loadCount);
     }
 
     private static Cursor getImageCursor(ContentResolver contentResolver, final String selection, final String[] selectionArgs, final String sortOrder) {

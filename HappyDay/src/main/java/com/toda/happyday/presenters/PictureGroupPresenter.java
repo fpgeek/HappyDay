@@ -16,6 +16,7 @@ import com.toda.happyday.models.db.DailyInfoDbHelper;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,10 @@ public class PictureGroupPresenter {
     private Activity mActivity;
     private DailyInfoDbHelper mDbHelper;
     private List<Picture> mPictureList;
+    private long mLastLoadedDateValue = new Date().getTime();
+
     private final static long TAKEN_DATE_DIFF_MS = 1000 * 60 * 60; // 사진이 묶이는 시간 차이 - 1시간
+    private final static int PICTURE_LOAD_COUNT = 200;
 
     public PictureGroupPresenter(Activity activity) {
         mActivity = activity;
@@ -48,7 +52,7 @@ public class PictureGroupPresenter {
 
         @Override
         public int compare(Picture picture, Picture picture2) {
-            return picture.getDate().compareTo(picture2.getDate());
+            return picture2.getDate().compareTo(picture.getDate());
         }
     };
 
@@ -129,7 +133,7 @@ public class PictureGroupPresenter {
 
 
     public void loadPictureGroups() {
-        Picture.all(mActivity, mOnPostGetPictureList);
+        Picture.all(mActivity, PICTURE_LOAD_COUNT, mLastLoadedDateValue, mOnPostGetPictureList);
     }
 
     private List<List<Picture>> pictureListToListGroupByTime(List<Picture> pictureList) {
@@ -145,7 +149,7 @@ public class PictureGroupPresenter {
             }
 
             final long takenTime = picture.getDate().getTime();
-            if ( (takenTime - prevPictTakenTime) <= TAKEN_DATE_DIFF_MS ) {
+            if ( (prevPictTakenTime - takenTime) <= TAKEN_DATE_DIFF_MS ) {
                 pictureGroup.add(picture);
             } else {
                 pictureGroupList.add(pictureGroup);
