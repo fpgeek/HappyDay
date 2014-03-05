@@ -2,6 +2,7 @@ package com.toda.happyday.views;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -10,7 +11,14 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.toda.happyday.R;
+import com.toda.happyday.async.AsyncPostExecute;
+import com.toda.happyday.models.PictureGroup;
 import com.toda.happyday.presenters.PictureGroupPresenter;
+import com.toda.happyday.presenters.PictureGroupsLoadListener;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class MainActivity extends Activity {
 
@@ -50,7 +58,9 @@ public class MainActivity extends Activity {
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment {
+    public static class PlaceholderFragment extends Fragment implements PictureGroupsLoadListener {
+
+        private PictureGroupPresenter mPictureGroupPresenter;
 
         public PlaceholderFragment() {
         }
@@ -58,11 +68,20 @@ public class MainActivity extends Activity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
-            PictureGroupPresenter pictureGroupPresenter = new PictureGroupPresenter(getActivity());
-            pictureGroupPresenter.loadPictureGroups();
+            mPictureGroupPresenter = new PictureGroupPresenter(getActivity());
+            mPictureGroupPresenter.loadPictureGroups(new Date().getTime(), this);
 
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
             return rootView;
+        }
+
+        @Override
+        public void onLoad(List<PictureGroup> loadedPictureGroups, boolean isLoadComplete) {
+            Intent intent = new Intent(getActivity(), PictureGroupActivity.class);
+            intent.putParcelableArrayListExtra(getActivity().getString(R.string.EXTRA_PICTURE_GROUP_LIST), new ArrayList<PictureGroup>(loadedPictureGroups));
+            intent.putExtra(getActivity().getString(R.string.EXTRA_LAST_LOAD_TIME), mPictureGroupPresenter.getLastLoadedDateValue());
+            intent.putExtra(getActivity().getString(R.string.EXTRA_IS_LOAD_COMPLETE), isLoadComplete);
+            getActivity().startActivity(intent);
         }
     }
 }

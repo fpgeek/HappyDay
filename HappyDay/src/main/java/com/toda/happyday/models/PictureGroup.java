@@ -109,7 +109,7 @@ public class PictureGroup extends ArrayList<Picture> implements Parcelable {
                     selection,
                     selectionArgs
             );
-            db.close();
+//            db.close();
 
             return count == 1;
         }

@@ -176,13 +176,13 @@ public class Picture implements Parcelable {
     }
 
     private static Cursor getAllImageCursor(ContentResolver contentResolver, int loadCount, long lastLoadDateValue) {
-        final String selection = MediaStore.Images.Media.DATE_TAKEN + " < ?";
+        final String selection = MediaStore.Images.Media.DATE_TAKEN + " <= ?";
         final String[] selectionArgs = {String.valueOf(lastLoadDateValue)};
         return getImageCursor(contentResolver, selection, selectionArgs, DB_IMAGE_DATE_ORDER + " limit " + loadCount);
     }
 
     private static Cursor getAllVideoCursor(ContentResolver contentResolver, int loadCount, long lastLoadDateValue) {
-        final String selection = MediaStore.Video.Media.DATE_TAKEN + " < ?";
+        final String selection = MediaStore.Video.Media.DATE_TAKEN + " <= ?";
         final String[] selectionArgs = {String.valueOf(lastLoadDateValue)};
         return getVideoCursor(contentResolver, selection, selectionArgs, DB_VIDEO_DATE_ORDER + " limit " + loadCount);
     }

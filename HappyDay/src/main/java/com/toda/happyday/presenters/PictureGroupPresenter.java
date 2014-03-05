@@ -1,13 +1,10 @@
 package com.toda.happyday.presenters;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.toda.happyday.async.AsyncPostExecute;
-import com.toda.happyday.views.PictureGroupActivity;
 import com.toda.happyday.R;
 import com.toda.happyday.models.Picture;
 import com.toda.happyday.models.PictureGroup;
@@ -26,17 +23,24 @@ import java.util.Map;
  */
 public class PictureGroupPresenter {
 
-    private Activity mActivity;
+    private Context mContext;
     private DailyInfoDbHelper mDbHelper;
     private List<Picture> mPictureList;
+    private PictureGroupsLoadListener mPictureGroupsLoadListener = null;
+
     private long mLastLoadedDateValue = new Date().getTime();
+    private boolean mIsDuplicateLoad = false;
 
     private final static long TAKEN_DATE_DIFF_MS = 1000 * 60 * 60; // 사진이 묶이는 시간 차이 - 1시간
     private final static int PICTURE_LOAD_COUNT = 200;
 
-    public PictureGroupPresenter(Activity activity) {
-        mActivity = activity;
-        mDbHelper = new DailyInfoDbHelper(mActivity);
+    public PictureGroupPresenter(Context context) {
+        mContext = context;
+        mDbHelper = new DailyInfoDbHelper(mContext);
+    }
+
+    public long getLastLoadedDateValue() {
+        return mLastLoadedDateValue;
     }
 
     private AsyncPostExecute<List<Picture>> mOnPostGetPictureList = new AsyncPostExecute<List<Picture>>() {
@@ -66,26 +70,48 @@ public class PictureGroupPresenter {
 
     private AsyncPostExecute<List<PictureGroup>> mOnPostGetPictureGroupList = new AsyncPostExecute<List<PictureGroup>>() {
         @Override
-        public void onPostExecute(List<PictureGroup> pictureGroupList) {
+        public void onPostExecute(List<PictureGroup> allPictureGroupList) {
 
-            Map<Long, PictureGroup> pictureGroupHashMap = pictureGroupListToMap(pictureGroupList);
+            List<PictureGroup> pictureGroupList = createGroupListByTime(allPictureGroupList);
+            if (!pictureGroupList.isEmpty()) {
+
+                if (pictureGroupList.size() == 1 && mPictureList.size() == PICTURE_LOAD_COUNT) { // 하나의 그룹이 존재하고 한번에 가져올 수 있는 이미지 개수와 동일한 특수한 경우 처리
+                    if (!mIsDuplicateLoad) {
+                        mIsDuplicateLoad = true;
+                    } else {
+                        if (mPictureGroupsLoadListener != null) {
+                            mPictureGroupsLoadListener.onLoad(pictureGroupList, true);
+                        }
+                        return;
+                    }
+                }
+
+                PictureGroup lastPictureGroup = pictureGroupList.get(pictureGroupList.size() - 1);
+                mLastLoadedDateValue = lastPictureGroup.get(0).getDate().getTime();
+                pictureGroupList.remove(lastPictureGroup);
+            }
+
+            if (mPictureGroupsLoadListener != null) {
+                boolean isLoadComplete = !mIsDuplicateLoad && pictureGroupList.isEmpty();
+                mPictureGroupsLoadListener.onLoad(pictureGroupList, isLoadComplete);
+            }
+        }
+
+        private List<PictureGroup> createGroupListByTime(final List<PictureGroup> allPictureGroupList) {
+            Map<Long, PictureGroup> allPictureGroupHashMap = pictureGroupListToMap(allPictureGroupList);
             List<List<Picture>> pictureGroupListGroupByTimes = pictureListToListGroupByTime(mPictureList);
 
-            SharedPreferences sharedPreferences = mActivity.getSharedPreferences(mActivity.getString(R.string.preference_picture_info_key), Context.MODE_PRIVATE);
-
+            SharedPreferences sharedPreferences = mContext.getSharedPreferences(mContext.getString(R.string.preference_picture_info_key), Context.MODE_PRIVATE);
             SQLiteDatabase writableDb = mDbHelper.getWritableDatabase();
 
-            List<PictureGroup> newCreatedPictureGroups = new ArrayList<PictureGroup>();
+            List<PictureGroup> currentPictureGroupList = new ArrayList<PictureGroup>();
             for (List<Picture> picturesGroupByTime : pictureGroupListGroupByTimes) {
-                final long pictureGroupId = getPictureGroupId(sharedPreferences, picturesGroupByTime);
-                if (pictureGroupId == -1) {
-                    PictureGroup pictureGroup = PictureGroup.create(writableDb);
-                    newCreatedPictureGroups.add(pictureGroup);
+                PictureGroup pictureGroup = getOrCreatePictureGroup(allPictureGroupHashMap, sharedPreferences, writableDb, picturesGroupByTime);
+                if (pictureGroup != null) {
                     pictureGroup.addAll(picturesGroupByTime);
-                    pictureGroupList.add(pictureGroup);
+                    currentPictureGroupList.add(pictureGroup);
                 } else {
-                    PictureGroup pictureGroup = pictureGroupHashMap.get(pictureGroupId);
-                    pictureGroup.addAll(picturesGroupByTime);
+                    assert false;
                 }
             }
 
@@ -93,14 +119,21 @@ public class PictureGroupPresenter {
                 writableDb.close();
             }
 
-            insertPictureGroupToPictureInfo(sharedPreferences, newCreatedPictureGroups);
-            removeEmptyPictureGroups(pictureGroupList);
+            insertPictureGroupToPictureInfo(sharedPreferences, currentPictureGroupList);
+            removeEmptyPictureGroups(currentPictureGroupList);
 
-            Collections.sort(pictureGroupList, new PictureGroupCompare());
+            Collections.sort(currentPictureGroupList, new PictureGroupCompare());
 
-            Intent intent = new Intent(mActivity, PictureGroupActivity.class);
-            intent.putParcelableArrayListExtra(mActivity.getString(R.string.EXTRA_PICTURE_GROUP_LIST), new ArrayList<PictureGroup>(pictureGroupList));
-            mActivity.startActivity(intent);
+            return currentPictureGroupList;
+        }
+
+        private PictureGroup getOrCreatePictureGroup(Map<Long, PictureGroup> allPictureGroupHashMap, SharedPreferences sharedPreferences, SQLiteDatabase writableDb, List<Picture> picturesGroupByTime) {
+            final long pictureGroupId = getPictureGroupId(sharedPreferences, picturesGroupByTime);
+            if (pictureGroupId == -1) {
+                return PictureGroup.create(writableDb);
+            } else {
+                return allPictureGroupHashMap.get(pictureGroupId);
+            }
         }
     };
 
@@ -127,13 +160,15 @@ public class PictureGroupPresenter {
 
         for (PictureGroup pictureGroup : emptyPictureGroup) {
             pictureGroupList.remove(pictureGroup);
-            PictureGroup.remove(mDbHelper, pictureGroup.getId());
+//            PictureGroup.remove(mDbHelper, pictureGroup.getId());
         }
     }
 
 
-    public void loadPictureGroups() {
-        Picture.all(mActivity, PICTURE_LOAD_COUNT, mLastLoadedDateValue, mOnPostGetPictureList);
+    public void loadPictureGroups(long lastLoadTime, PictureGroupsLoadListener pictureGroupsLoadListener) {
+        mLastLoadedDateValue = lastLoadTime;
+        mPictureGroupsLoadListener = pictureGroupsLoadListener;
+        Picture.all(mContext, PICTURE_LOAD_COUNT, mLastLoadedDateValue, mOnPostGetPictureList);
     }
 
     private List<List<Picture>> pictureListToListGroupByTime(List<Picture> pictureList) {

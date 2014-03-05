@@ -40,6 +40,7 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
 
     private Activity mActivity;
     private List<PictureGroup> mPictureGroups;
+    private AsyncPostExecute<Integer> mLastViewCallback;
 
     private int windowWidth = 0;
     private int windowHeight = 0;
@@ -52,11 +53,14 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
 
     private static NetworkUtil mNetworkUtil;
 
-    public PictureGroupAdapter(Activity activity, List<PictureGroup> pictureGroups, ImageListLoader imageListLoader) {
+    private int mPrevLastPosition = 0;
+
+    public PictureGroupAdapter(Activity activity, List<PictureGroup> pictureGroups, ImageListLoader imageListLoader, AsyncPostExecute<Integer> lastViewCallback) {
         super(activity, R.layout.picture_group_item, pictureGroups);
         this.mActivity = activity;
 
         this.mPictureGroups = pictureGroups;
+        this.mLastViewCallback = lastViewCallback;
 
         DisplayMetrics metrics = new DisplayMetrics();
         ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(metrics);
@@ -136,7 +140,20 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
             mJobManager.addJobInBackground(new LocationJob(getContext(), picture, mLocationJobPictureIdSet, new LocationPostListener()));
         }
 
+        if (isLastView(position)) {
+            mLastViewCallback.onPostExecute(position);
+        }
+
         return convertView;
+    }
+
+    private boolean isLastView(int position) {
+        final boolean isLastPosition = (position + 1) == mPictureGroups.size();
+        boolean isLastView = isLastPosition && (mPrevLastPosition != position);
+        if (isLastPosition) {
+            mPrevLastPosition = position;
+        }
+        return isLastView;
     }
 
     private class LocationTextClickListener implements View.OnClickListener {
@@ -149,10 +166,12 @@ public class PictureGroupAdapter extends ArrayAdapter<PictureGroup> {
 
         @Override
         public void onClick(View view) {
-            final String geo =  "geo:" + mPicture.getLatitude() + "," + mPicture.getLongitude();
-            Log.i("MAP", "geo : " + geo);
-            Intent intent =new Intent(Intent.ACTION_VIEW, Uri.parse(geo));
-            getContext().startActivity(intent);
+            if (mPicture.hasValidLocationInfo() && mPicture.getLocation() != null) {
+                final String geo =  "geo:" + mPicture.getLatitude() + "," + mPicture.getLongitude();
+                Log.i("MAP", "geo : " + geo);
+                Intent intent =new Intent(Intent.ACTION_VIEW, Uri.parse(geo));
+                getContext().startActivity(intent);
+            }
         }
     };
 
